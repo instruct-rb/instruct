@@ -1,6 +1,8 @@
 # depenedencies
+require_relative "instruct/rainbow"
 
 # stdlib
+require 'erb'
 
 # modules
 require_relative "instruct/env"

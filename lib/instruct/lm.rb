@@ -1,5 +1,3 @@
-require 'erb'
-
 module Instruct
   class LM
     # include Instruct::LM::Variables
@@ -64,6 +62,21 @@ module Instruct
 
     def transcript_string
       transcript.map { |entry| entry[:text] }.join
+    end
+
+    def transcript_pretty_string
+      return transcript_string unless defined? Rainbow
+      transcript.map do |entry|
+        case entry[:type]
+        when :llm
+          Rainbow(entry[:text]).bg(:green)
+        when :text
+          Rainbow(entry[:text])
+        else
+          Rainbow(entry[:text]).underline
+        end
+      end
+      .join("")
     end
 
     def render_template(expression)
