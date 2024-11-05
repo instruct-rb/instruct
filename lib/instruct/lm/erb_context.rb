@@ -1,7 +1,8 @@
 class Instruct::LM
   class ERBContext
-    def initialize(lm, binding)
+    def initialize(lm, binding, expression)
       @lm = lm
+      @expression = expression
       @binding = binding
       @_erbout = ''  # Use ERB's default output buffer variable
     end
@@ -18,8 +19,8 @@ class Instruct::LM
     end
 
     def gen(**kwargs)
-      kwargs[:partial_output] = @_erbout.gsub!(/ +$/,'').dup
-      # llms cant accept a trailing space, so whenever we run gen, we remove it
+      kwargs[:_instruct_erb_context] = [@_erbout.dup, @expression]
+      @_erbout.clear
       @lm.gen(**kwargs)
     end
 

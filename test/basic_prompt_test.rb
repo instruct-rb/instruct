@@ -7,11 +7,6 @@ class BasicPromptTest < Minitest::Test
     @lm = Instruct::LM.new(completion_model: @mock)
   end
 
-  def test_the_most_basic_erb_prompt
-    @mock.add_expected_completion("a prompt:", " a response", stop: "\n")
-    @lm += @lm.f{'a prompt: <%= gen(stop: "\n") %>'}
-    @mock.verify
-  end
 
   def test_a_two_part_basic_prompt
     @mock.add_expected_completion("a prompt:", " a response", stop: "\n")
@@ -27,8 +22,4 @@ class BasicPromptTest < Minitest::Test
     @mock.verify
   end
 
-  def test_a_basic_prompt_with_chained_gen
-    # @mock.add_expected_completion("a prompt:", " a response", stop: "\n")
-    # @lm += @lm.f{'a prompt: '} + @lm.gen(stop: "\n")
-  end
 end

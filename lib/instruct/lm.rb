@@ -1,86 +1,107 @@
 require 'erb'
 
-class Instruct::LM
-  include Instruct::LM::Variables
-  attr_reader :prompts, :last_completion, :completion_model
+module Instruct
+  class LM
+    # include Instruct::LM::Variables
+    attr_reader :transcript
 
-  def initialize(prompts = [], variables = {}, completion_model: nil)
-    @completion_model = completion_model
-    initialize_variables(variables)
-    @prompts = prompts.dup
-    @last_completion = ''
-  end
+    def initialize(completion_model: nil, transcript: [], unprocessed_expressions: [])
+      @completion_model = completion_model
+      @transcript = transcript.dup
+      unprocessed_expressions.each { |expression| process_expression(expression) }
+    end
 
-  def f(&block)
-    prompt_content = block_given? ? render_template(&block) : raise(ArgumentError, 'Block required')
-    Prompt.new(:text, prompt_content)
-  end
+    def dup(**kwargs)
+      instance_vars = {completion_model: @completion_model, transcript: @transcript}
+      Instruct::LM.new(**instance_vars.merge(kwargs))
+    end
 
-  def gen(**kwargs)
-    partial_output = kwargs.delete(:partial_output) || ''
+    def process_expression(expression)
+      if expression.is_a?(Instruct::Expression::PlainText)
+        add_to_transcript(expression, :text, expression.text)
+      elsif expression.is_a?(Instruct::Expression::LLMFuture)
+        result = resolve_llm_future(expression)
+        add_to_transcript(expression, :llm, result)
+      elsif expression.is_a?(Instruct::Expression::ERBFuture)
+        result = render_template(expression)
+        add_to_transcript(expression, :text, result)
+      else
+        raise Todo
+      end
+    end
 
-    # Gather the prompt history up to this point
-    prompt_history = prompts.map(&:to_s).join("")
-    prompt_history += partial_output
-    prompt_history.gsub!(/ +$/,'')
-    @completion_model.completion(prompt_history, **kwargs)
-  end
+    def add_to_transcript(expression, type, text)
+      @transcript << {expression: expression, type: type, text: text}
+    end
 
-  def +(other)
-    Instruct::LM.new(@prompts + [other], @variables, completion_model: @completion_model)
-  end
+    def f(&block)
+      Instruct::Expression::ERBFuture.new(block)
+      # prompt_content = block_given? ? render_template(&block) : raise(ArgumentError, 'Block required')
+      # Prompt.new(:text, prompt_content)
+    end
 
-  def system(&block)
-    prompt_content = block_given? ? render_template(&block) : ''
-    Prompt.new(:system, prompt_content)
-  end
+    def gen(**kwargs)
+      instruct_erb_context = kwargs.delete(:_instruct_erb_context)
+      new_expression = Instruct::Expression::LLMFuture.new(**kwargs)
+      return new_expression unless instruct_erb_context
 
-  def user(text = nil, &block)
-    prompt_content = block_given? ? render_template(&block) : text
-    Prompt.new(:user, prompt_content)
-  end
+      partial_output, expression = instruct_erb_context
+      add_to_transcript(expression, :text, partial_output)
+      result = resolve_llm_future(new_expression)
+      add_to_transcript(expression, :llm, result)
+      nil # we're adding directly to transcript so we don't wat to put anything in _erbout
+    end
 
-  def assistant(&block)
-    prompt_content = block_given? ? render_template(&block) : ''
-    simulate_llm_response(prompt_content)
-  end
+    def +(other)
+      other = Instruct::Expression::PlainText.new(other) if other.is_a?(String)
+      raise ArgumentError unless other.is_a? (Instruct::Expression::Expression)
+      if other.is_a?(Instruct::Expression::Concat)
+        return other.expressions.reduce(self, :+)
+      end
 
-  def render_template(&block)
-    template_str = block.call
+      dup(unprocessed_expressions: [other])
+    end
 
-    # Create a custom context for the ERB template
-    erb_context = Instruct::LM::ERBContext.new(self, block.binding)
+    def transcript_string
+      transcript.map { |entry| entry[:text] }.join
+    end
 
-    # Create a new ERB template without specifying eoutvar
-    erb_template = ERB.new(template_str, trim_mode: '-', eoutvar: '@_erbout')
+    def render_template(expression)
+      block = expression.template_block
+      template_str = block.call
 
-    # Render the template within the context
-    output = erb_template.result(erb_context.instance_eval { binding })
+      # Create a custom context for the ERB template
+      erb_context = Instruct::LM::ERBContext.new(self, block.binding, expression)
 
-    output
-  end
+      # Create a new ERB template without specifying eoutvar
+      erb_template = ERB.new(template_str, trim_mode: '-', eoutvar: '@_erbout')
 
-  # Modified select method to simulate an LLM call using prompt history
-  def simulate_llm_select(prompt_history, options)
-    puts "LLM Prompt:"
-    puts prompt_history
-    puts "Options: #{options.inspect}"
-    # For simulation, pick the first unselected option
-    # If all options have been selected, pick a random one
-    options.sample
-  end
+      # Render the template within the context
+      output = erb_template.result(erb_context.instance_eval { binding })
 
-  private
+      output
+    end
 
-  def simulate_llm_response(prompt_content)
-    @last_completion = prompt_content.strip
-    @prompts << Prompt.new(:assistant, prompt_content)
-  end
 
-  Prompt = Struct.new(:role, :content) do
-    def to_s
-      return content if role == :text
-      "#{role}: #{content}"
+    private
+
+    def resolve_llm_future(expression)
+      whitespace = ''
+      prompt_text = transcript_string.gsub(/( +)$/) do |match|
+        whitespace = match
+        ''
+      end
+      response_text = @completion_model.completion(prompt_text, **expression.kwargs)
+      response_text = response_text[whitespace.length...] if response_text.start_with?(whitespace)
+      response_text
+    end
+
+
+    Prompt = Struct.new(:role, :content) do
+      def to_s
+        return content if role == :text
+        "#{role}: #{content}"
+      end
     end
   end
 end

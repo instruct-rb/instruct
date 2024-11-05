@@ -4,6 +4,7 @@
 
 # modules
 require_relative "instruct/env"
+require_relative "instruct/expression"
 require_relative "instruct/lm/variables"
 require_relative "instruct/lm/erb_context"
 require_relative "instruct/lm"
