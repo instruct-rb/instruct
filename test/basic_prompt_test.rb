@@ -18,7 +18,7 @@ class BasicPromptTest < Minitest::Test
   def test_a_basic_prompt_extra_gen
     @mock.add_expected_completion("a prompt:", " a response", stop: "\n")
     @lm += @lm.f{'a prompt: '}
-    @lm + @lm.gen(stop: "\n")
+    @lm += @lm.gen(stop: "\n")
     @mock.verify
   end
 

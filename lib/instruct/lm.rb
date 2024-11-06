@@ -1,28 +1,31 @@
 module Instruct
   class LM
-    # include Instruct::LM::Variables
+    include Instruct::LM::Variables
     attr_reader :transcript
 
-    def initialize(completion_model: nil, transcript: [], unprocessed_expressions: [])
+    def initialize(completion_model: nil, transcript: [], unprocessed_expressions: [], variables: {})
+      initialize_variables(variables)
       @completion_model = completion_model
       @transcript = transcript.dup
       unprocessed_expressions.each { |expression| process_expression(expression) }
     end
 
     def dup(**kwargs)
-      instance_vars = {completion_model: @completion_model, transcript: @transcript}
+      instance_vars = {completion_model: @completion_model, transcript: @transcript, variables: dup_variables}
       Instruct::LM.new(**instance_vars.merge(kwargs))
     end
 
-    def process_expression(expression)
+    def process_expression(expression, user_expression: nil)
+      user_expression ||= expression
       if expression.is_a?(Instruct::Expression::PlainText)
-        add_to_transcript(expression, :text, expression.text)
+        add_to_transcript(user_expression, :text, expression.text)
       elsif expression.is_a?(Instruct::Expression::LLMFuture)
         result = resolve_llm_future(expression)
-        add_to_transcript(expression, :llm, result)
+        capture_result_in_variable(result, name: expression.kwargs[:name], arr_name: expression.kwargs[:arr_name])
+        add_to_transcript(user_expression, :llm, result)
       elsif expression.is_a?(Instruct::Expression::ERBFuture)
         result = render_template(expression)
-        add_to_transcript(expression, :text, result)
+        add_to_transcript(user_expression, :text, result)
       else
         raise Todo
       end
@@ -39,15 +42,19 @@ module Instruct
     end
 
     def gen(**kwargs)
-      instruct_erb_context = kwargs.delete(:_instruct_erb_context)
+      called_within_erb_template = kwargs.delete(:_instruct_erb_context)
       new_expression = Instruct::Expression::LLMFuture.new(**kwargs)
-      return new_expression unless instruct_erb_context
+      return new_expression unless called_within_erb_template
 
-      partial_output, expression = instruct_erb_context
-      add_to_transcript(expression, :text, partial_output)
-      result = resolve_llm_future(new_expression)
-      add_to_transcript(expression, :llm, result)
-      nil # we're adding directly to transcript so we don't wat to put anything in _erbout
+      # if we arrive here, we are in the context of an ERBFuture expression
+      # that is having its ERB template rendered
+      # partial output contains the plain text portion of the erb template
+      # between gen calls within the template
+      partial_output, expression = called_within_erb_template
+      plain_text = Instruct::Expression::PlainText.new(partial_output)
+      process_expression(plain_text, user_expression: expression)
+      process_expression(new_expression, user_expression: expression)
+      nil # we're adding directly to transcript so we don't put anything in _erbout
     end
 
     def +(other)
