@@ -124,13 +124,8 @@ module Instruct
     private
 
     def resolve_llm_future(expression)
-      whitespace = ''
-      prompt_text = transcript_string.gsub(/( +)$/) do |match|
-        whitespace = match
-        ''
-      end
-      response_text = @completion_model.completion(prompt_text, **expression.kwargs)
-      response_text = response_text[whitespace.length...] if response_text.start_with?(whitespace)
+      req = Model::CompletionRequest.new(transcript, **expression.kwargs)
+      response_text = @completion_model.execute(req)
       response_text
     end
 

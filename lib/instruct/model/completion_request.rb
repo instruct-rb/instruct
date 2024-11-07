@@ -1,13 +1,13 @@
 module Instruct::Model
   class CompletionRequest
     attr_reader :env
-    def initialize(transcript)
-      # prompt is the transcript, this contains more info than just the text, it also includes the type of expression
-      @env = { prompt: prompt }
+    def initialize(transcript, **kwargs)
+      @env = kwargs.merge({ transcript: transcript, unmodified_transcript: transcript.dup })
     end
 
-    def prompt
-      env[:prompt]
+    def transcript
+      @env[:transcript]
     end
+
   end
 end

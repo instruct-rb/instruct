@@ -7,5 +7,5 @@ require "minitest/pride"
 require_relative "utils/completion_mock"
 
 class Minitest::Test
-  # custom assertions
+  # custom as
 end

@@ -5,7 +5,7 @@ module Instruct
       attr_reader :prompt_safe
       def prompt_safe?
        @prompt_safe == true
-     end
+      end
 
       def +(other)
         other = PlainText.new(other) if other.is_a?(String)

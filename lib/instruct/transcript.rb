@@ -33,14 +33,16 @@ module Instruct
     end
 
     def dup
-      Transcript.new(elements: @elements.dup)
+      Transcript.new(elements: @elements.map(&:dup))
     end
 
     # Maps the transcript structs to a new array of duplicated structs that can be modified.
     def map(prompt_safe: nil, &block)
-      duplicate = dup
-      dup.transcript.map(&:dup).map(&block)
-      duplicate
+      Transcript.new(elements: @elements.map(&:dup).map(&block))
+    end
+
+    def ==(other)
+      self.class == other.class && @elements == other.elements
     end
 
     def to_s

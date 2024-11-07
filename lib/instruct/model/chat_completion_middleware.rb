@@ -1,15 +1,32 @@
 module Instruct::Model
-  # Converts transcript entries from {}
+  # Converts transcript plain text entries into role-based conversation entries
+  # See {file:docs/prompt-completion-middleware.md#label-Chat+Completion+Middleware}
   class ChatCompletionMiddleware
-    def initialize
-      @parser = RoleParser.new(roles: [:system, :user, :assistant])
+    def initialize(roles: [:system, :user, :assistant])
     end
 
-    def complete(req, next_completer:)
-      next_completer.complete(req)
+    def call(req, _next:)
+      @pos = 0
+      @current_role = nil
+
+      # need to work out pos of each entry in text transcript
+      _next.call(req)
     end
 
-    def escape(input, next_escaper:)
+    def find_first_text
+      req.transcript.elements[@pos]
     end
+
+    def entry_peek(n)
+      req.transcript.elements[@pos + n]
+    end
+
+    def entry_pop(n)
+      req.transcript.elements[@pos + n]
+    end
+
+
+
+
   end
 end

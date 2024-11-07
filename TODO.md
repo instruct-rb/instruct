@@ -75,3 +75,4 @@
   - [ ] write a test for this
 
 # Tidys
+- [ ] Add a test helper for LM that just tests the transcript string
