@@ -24,3 +24,11 @@ end
 puts lm[:animals] # ['dog', 'cat', 'bird', 'fish', 'snake']
 puts lm[:animal] # 'snake'
 ```
+
+
+# Features
+
+## User content escaping
+TODO: fill in documenation on how this works
+ERB templates should automatically escape unless the string is marked as prompt_safe.
+lm.escape() should escape user input.

@@ -9,6 +9,7 @@ class Instruct::LM
 
     # Expose methods and variables to the ERB template
     def method_missing(name, *args, &block)
+      # TODO: wrap this call add it to the transcript as unsafe, clear the buffer and return nil
       if @binding.local_variables.include?(name)
         @binding.local_variable_get(name)
       elsif @lm.respond_to?(name)

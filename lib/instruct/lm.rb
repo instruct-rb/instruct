@@ -3,10 +3,10 @@ module Instruct
     include Instruct::LM::Variables
     attr_reader :transcript
 
-    def initialize(completion_model: nil, transcript: [], unprocessed_expressions: [], variables: {})
+    def initialize(completion_model: nil, transcript: nil, unprocessed_expressions: [], variables: {})
       initialize_variables(variables)
       @completion_model = completion_model
-      @transcript = transcript.dup
+      @transcript = transcript.dup || Transcript.new
       unprocessed_expressions.each { |expression| process_expression(expression) }
     end
 
@@ -18,21 +18,36 @@ module Instruct
     def process_expression(expression, user_expression: nil)
       user_expression ||= expression
       if expression.is_a?(Instruct::Expression::PlainText)
-        add_to_transcript(user_expression, :text, expression.text)
+        @transcript.add_prompt_element(
+          calling_expression: user_expression,
+          content: expression.text,
+          mime: 'text/plain',
+          prompt_safe: expression.prompt_safe?
+        )
       elsif expression.is_a?(Instruct::Expression::LLMFuture)
         result = resolve_llm_future(expression)
+
+        # TODO this should be a method on the expression
         capture_result_in_variable(result, name: expression.kwargs[:name], arr_name: expression.kwargs[:arr_name])
-        add_to_transcript(user_expression, :llm, result)
+
+        @transcript.add_response_element(
+          calling_expression: user_expression,
+          content: result,
+          mime: 'text/plain',
+          prompt_safe: expression.prompt_safe?,
+          model_response: Todo.new
+        )
       elsif expression.is_a?(Instruct::Expression::ERBFuture)
         result = render_template(expression)
-        add_to_transcript(user_expression, :text, result)
+        @transcript.add_prompt_element(
+          calling_expression: user_expression,
+          content: result,
+          mime: 'text/plain',
+          prompt_safe: expression.prompt_safe?
+        )
       else
         raise Todo
       end
-    end
-
-    def add_to_transcript(expression, type, text)
-      @transcript << {expression: expression, type: type, text: text}
     end
 
     def f(&block)
@@ -42,23 +57,25 @@ module Instruct
     end
 
     def gen(**kwargs)
+      # TODO: refactor most of this into erb context, it'll make this way simpler
       called_within_erb_template = kwargs.delete(:_instruct_erb_context)
-      new_expression = Instruct::Expression::LLMFuture.new(**kwargs)
-      return new_expression unless called_within_erb_template
+      return Instruct::Expression::LLMFuture.new(**kwargs) unless called_within_erb_template
 
       # if we arrive here, we are in the context of an ERBFuture expression
-      # that is having its ERB template rendered
+      # that is having its ERB template rendered as it's being processed
+      #
       # partial output contains the plain text portion of the erb template
-      # between gen calls within the template
-      partial_output, expression = called_within_erb_template
-      plain_text = Instruct::Expression::PlainText.new(partial_output)
-      process_expression(plain_text, user_expression: expression)
-      process_expression(new_expression, user_expression: expression)
+      # and
+      partial_output, erb_future_expression = called_within_erb_template
+      plain_text = Instruct::Expression::PlainText.new(partial_output, prompt_safe: erb_future_expression.should_mark_child_plain_text_as_prompt_safe?)
+      process_expression(plain_text, user_expression: erb_future_expression)
+      llm_future = Instruct::Expression::LLMFuture.new(**kwargs.merge(prompt_safe: erb_future_expression.should_mark_child_llm_future_as_prompt_safe?))
+      process_expression(llm_future, user_expression: erb_future_expression)
       nil # we're adding directly to transcript so we don't put anything in _erbout
     end
 
     def +(other)
-      other = Instruct::Expression::PlainText.new(other) if other.is_a?(String)
+      other = Instruct::Expression::PlainText.new(other, prompt_safe: false) if other.is_a?(String)
       raise ArgumentError unless other.is_a? (Instruct::Expression::Expression)
       if other.is_a?(Instruct::Expression::Concat)
         return other.expressions.reduce(self, :+)
@@ -68,20 +85,21 @@ module Instruct
     end
 
     def transcript_string
-      transcript.map { |entry| entry[:text] }.join
+      return @transcript.to_s
     end
 
     def transcript_pretty_string
+      raise Todo, "move this to transcript class"
       return transcript_string unless defined? Rainbow
       transcript.map do |entry|
-        case entry[:type]
-        when :llm
-          Rainbow(entry[:text]).bg(:green)
-        when :text
-          Rainbow(entry[:text])
-        else
-          Rainbow(entry[:text]).underline
-        end
+        # case entry[:type]
+        # when :llm
+        #   Rainbow(entry[:text]).bg(:green)
+        # when :text
+        #   Rainbow(entry[:text])
+        # else
+        #   Rainbow(entry[:text]).underline
+        # end
       end
       .join("")
     end

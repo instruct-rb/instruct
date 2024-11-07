@@ -1,23 +1,31 @@
-# depenedencies
-require_relative "instruct/rainbow"
-
 # stdlib
 require 'erb'
+require 'ostruct'
+
+# dependencies
 
 # modules
 require_relative "instruct/env"
+require_relative "instruct/error"
 require_relative "instruct/expression"
 require_relative "instruct/lm/variables"
 require_relative "instruct/lm/erb_context"
 require_relative "instruct/lm"
+require_relative "instruct/model"
+require_relative "instruct/transcript"
 require_relative "instruct/version"
 
-module Instruct
-  class Error < StandardError; end
+# optional dependencies
+begin
+  require 'rainbow'
+rescue LoadError
+end
 
-  class Todo < Error
-    def message
-      "not implemented yet"
-    end
-  end
+begin
+  require_relative "instruct/openai"
+rescue LoadError
+end
+
+if defined? ::OpenAI
+
 end
