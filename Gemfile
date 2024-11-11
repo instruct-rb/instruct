@@ -2,8 +2,6 @@ source "https://rubygems.org"
 
 gemspec
 
-gem "mutex_m"
-
 # optional production deps
 gem "rainbow"
 gem "ruby-openai"

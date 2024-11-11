@@ -14,5 +14,10 @@ Gem::Specification.new do |spec|
   spec.require_path  = "lib"
 
   spec.required_ruby_version = ">= 3.3"
+
+
+  # removing from std lib in ruby 3.5
   spec.add_dependency "ostruct"
+  spec.add_dependency "mutex_m"
+  spec.add_dependency "fiddle"
 end
