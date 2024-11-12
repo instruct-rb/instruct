@@ -17,6 +17,7 @@ require_relative "instruct/model/chat_completion_middleware"
 require_relative "instruct/model/chomp_middleware"
 require_relative "instruct/transcript"
 require_relative "instruct/utils/middleware_chain"
+require_relative "instruct/utils/attributed_string"
 require_relative "instruct/version"
 
 # optional dependencies
