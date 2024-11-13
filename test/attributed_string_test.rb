@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class TestAttributedString < Minitest::Test
+class AttributedStringTest < Minitest::Test
   def setup
     @string = "Hello, World!"
     @attr_string = Instruct::AttributedString.new(@string)
@@ -74,35 +74,48 @@ class TestAttributedString < Minitest::Test
     5.upto(12) do |i|
       assert_equal({}, @attr_string.attributes_at(i))
     end
-
-    def test_add_attributes_overlap_different
-      @attr_string.add_attributes(0..4, { bold: true })
-      @attr_string.add_attributes(3..7, { italic: true })
-      0.upto(2) do |i|
-        assert_equal({ bold: true }, @attr_string.attributes_at(i))
-      end
-      3.upto(4) do |i|
-        assert_equal({ bold: true, italic: true })
-      end
-      5.upto(7) do |i|
-        assert_equal({ italic: true }, @attr_string.attributes_at(i))
-      end
-      8.upto(12) do |i|
-        assert_equal({}, @attr_string.attributes_at(i))
-      end
-    end
-
-    def test_dup
-      @attr_string.add_attributes(0..4, { bold: true })
-      dup = @attr_string.dup
-      0.upto(4) do |i|
-        assert_equal({ font_size: 12 }, dup.attributes_at(i))
-      end
-      5.upto(12) do |i|
-        assert_equal({}, dup.attributes_at(i))
-      end
-    end
-
-
   end
+
+  def test_add_attributes_overlap_different
+    @attr_string.add_attributes(0..4, { bold: true })
+    @attr_string.add_attributes(3..7, { italic: true })
+    0.upto(2) do |i|
+      assert_equal({ bold: true }, @attr_string.attributes_at(i))
+    end
+    3.upto(4) do |i|
+      assert_equal({ bold: true, italic: true }, @attr_string.attributes_at(i))
+    end
+    5.upto(7) do |i|
+      assert_equal({ italic: true }, @attr_string.attributes_at(i))
+    end
+    8.upto(12) do |i|
+      assert_equal({}, @attr_string.attributes_at(i))
+    end
+  end
+
+  def test_dup
+    @attr_string.add_attributes(0..4, { bold: true })
+    dup = @attr_string.dup
+    0.upto(4) do |i|
+      assert_equal({ bold: true }, dup.attributes_at(i))
+    end
+    5.upto(12) do |i|
+      assert_equal({}, dup.attributes_at(i))
+    end
+  end
+
+  def test_append_and_get_range
+    string = Instruct::AttributedString.new("H")
+    new_range = string.append_and_get_new_range("ello")
+    assert_equal(1..4, new_range)
+  end
+
+  def test_equals
+    @attr_string.add_attributes(0..2, { bold: true })
+    @attr_string.add_attributes(3..4, { bold: true })
+    string = Instruct::AttributedString.new("Hello, World!")
+    string.add_attributes(0..4, { bold: true })
+    assert_equal(string, @attr_string)
+  end
+
 end

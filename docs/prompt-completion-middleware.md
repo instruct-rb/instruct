@@ -23,7 +23,7 @@ retry logic, logging, or other enhancements you might imagine.
 
 # Creating New Middleware
 
-Any object the responds to `#call(req, _next::)` can be used as
+Any object that responds to `#call(req, _next:)` can be used as
 middleware. It's expected that on the happy path each bit of middleware calls
 `#call(req)` on `_next:` to continue the chain. The request will be an {Instruct::Model::CompletionRequest} object.
 

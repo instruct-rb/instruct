@@ -4,6 +4,10 @@ require 'ostruct'
 
 # dependencies
 
+# utils
+require_relative "instruct/utils/middleware_chain"
+require_relative "instruct/utils/attributed_string"
+
 # modules
 require_relative "instruct/env"
 require_relative "instruct/error"
@@ -16,8 +20,6 @@ require_relative "instruct/model/completion_request"
 require_relative "instruct/model/chat_completion_middleware"
 require_relative "instruct/model/chomp_middleware"
 require_relative "instruct/transcript"
-require_relative "instruct/utils/middleware_chain"
-require_relative "instruct/utils/attributed_string"
 require_relative "instruct/version"
 
 # optional dependencies

@@ -30,7 +30,7 @@ class CompletionMock
 
   def add_expected_completion(expected_prompt, response, **kwargs)
     @mock.expect(:call, response) do |req|
-      text_transcript = req.transcript.to_s
+      text_transcript = req.transcript.to_s(show_hidden: false)
       if text_transcript != expected_prompt
         puts "Expected prompt: '#{expected_prompt}', but got: '#{text_transcript}'"
         false

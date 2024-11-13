@@ -22,8 +22,9 @@ class LMTest < Minitest::Test
     lm2 = lm + lm.f{'1 + 1 = '} + lm.gen(stop: "\n")
     lm3 = lm + lm.f{'1 + 1 = '} + lm.gen(stop: "\n")
     mock.verify
-    assert_equal "1 + 1 = 2", lm2.transcript_string
-    assert_equal "1 + 1 = 2", lm3.transcript_string
+    assert_equal "1 + 1 =  2", lm2.transcript_string(show_hidden: true)
+    assert_equal "1 + 1 = 2", lm2.transcript_string(show_hidden: false)
+    assert_equal "1 + 1 = 2", lm3.transcript_string(show_hidden: false)
   end
 
   def test_a_prompt_with_erb
@@ -31,7 +32,7 @@ class LMTest < Minitest::Test
     lm = Instruct::LM.new(completion_model: mock)
     mock.add_expected_completion("1 + 1 =", " 2", stop: "\n")
     lm += lm.f{'1 + 1 = <%= gen(stop: "\n") %>.'}
-    assert_equal "1 + 1 = 2.", lm.transcript_string
+    assert_equal "1 + 1 = 2.", lm.transcript_string(show_hidden: false)
     mock.verify
   end
 

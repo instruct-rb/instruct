@@ -74,5 +74,9 @@
 - [ ] add prompt_safe to #f() so that it can be set to override the default
   - [ ] write a test for this
 
+# Chomp Middleware
+- [ ] If the middleware hid some whitespace, and then the LLM adds it, perhaps we should
+  hide the whitespace in the response, so that the captured variables are correct (don't hold the whitespace)
+
 # Tidys
 - [ ] Add a test helper for LM that just tests the transcript string

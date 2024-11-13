@@ -84,14 +84,14 @@ module Instruct
       dup(unprocessed_expressions: [other])
     end
 
-    def transcript_string
-      return @transcript.to_s
+    def transcript_string(show_hidden: true)
+      return @transcript.to_s(show_hidden:)
     end
 
     def transcript_pretty_string
       raise Todo, "move this to transcript class"
-      return transcript_string unless defined? Rainbow
-      transcript.map do |entry|
+      # return transcript_string unless defined? Rainbow
+      # transcript.map do |entry|
         # case entry[:type]
         # when :llm
         #   Rainbow(entry[:text]).bg(:green)
@@ -100,8 +100,8 @@ module Instruct
         # else
         #   Rainbow(entry[:text]).underline
         # end
-      end
-      .join("")
+      # end
+      # .join("")
     end
 
     def render_template(expression)

@@ -1,5 +1,6 @@
 module Instruct
-  # Handles executing middleware chain.
+  # Handles executing middleware chain. We use this class to coordinate as it allows us to
+  # make modifications inbetween middleware
   class MiddlewareChain
     # @param middlewares [Array<#call(req, _next::), MiddlewareChain>] An array of middleware objects. This can be a mix of classes, instances, procs, or other middleware chains.
     def initialize(middlewares:)
