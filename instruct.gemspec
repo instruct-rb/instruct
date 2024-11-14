@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.author        = "Andrew Mackross"
   spec.email         = "andrew@mackross.net"
 
-  spec.files         = Dir["*.{md,txt}", "{lib,licenses}/**/*"]
+  spec.files         = Dir["*.{md,txt}", "{lib}/**/*", "LICENSE"]
   spec.require_path  = "lib"
 
   spec.required_ruby_version = ">= 3.3"
