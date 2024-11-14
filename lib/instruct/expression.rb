@@ -37,6 +37,10 @@ module Instruct
         @prompt_safe = prompt_safe
       end
 
+      def prompt_safe?
+        @prompt_safe || true
+      end
+
       def should_mark_child_plain_text_as_prompt_safe?
         @prompt_safe || true
       end

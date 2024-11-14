@@ -5,12 +5,14 @@ module Instruct
     #def is_stop_finish_reason?()
     #end
     def middleware_chain
-      @middleware_chain ||= Instruct::MiddlewareChain.new(middlewares: @middlewares || [])
+      @middleware_chain ||= Instruct::MiddlewareChain.new(middlewares: (@middlewares || []) << self)
     end
 
     def call(req, _next:)
-      @options.merge!(req.env)
-      @client.completion(parameters: @options.merge(prompt: req.prompt_object))
+      call_options = @options.merge(req.env).merge(prompt: req.prompt_object)
+      response = call_options[:stream] = OpenAICompletionResponse.new
+      client_response = @client.completions(parameters: call_options)
+      response
     end
 
 

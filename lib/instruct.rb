@@ -36,6 +36,7 @@ rescue LoadError
 end
 
 if defined? ::OpenAI
+  require_relative "instruct/openai/completion_model"
   require_relative "instruct/openai/completion_response"
   require_relative "instruct/openai/chat_completion_response"
 else

@@ -63,6 +63,13 @@ class Instruct::AttributedString
     position..(@string.length - 1)
   end
 
+  def each_char(&block)
+    @string.each_char.with_index do |char, index|
+      attributes = attributes_at(index)
+      block.call(char, attributes)
+    end
+  end
+
   # Returns a filtered string the block will be called with each attribute,
   # value pair. It's an inclusive filter, so if the block returns true, any
   # character with that attribute will be included.

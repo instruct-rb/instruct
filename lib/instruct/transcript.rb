@@ -78,7 +78,35 @@ module Instruct
       Instruct::Transcript.new.send(:initialize_dup, @attr_string, @middleware_storage.dup || {})
     end
 
+    def pretty_string
+      change_based_on_attrs = [:source, :hide, :unhide, :prompt_safe]
+      result = ""
+      current_range = ""
+      last_attrs = {}
+      @attr_string.each_char do |char, attributes|
+        attrs = attributes.slice(*change_based_on_attrs)
+        if last_attrs != attrs
+          current_range = rainbowize_string(current_range, last_attrs) unless current_range.empty?
+          result += current_range
+          current_range = ""
+          last_attrs = attrs
+        end
+        current_range += char
+      end
+      result += rainbowize_string(current_range, last_attrs) unless current_range.empty?
+    end
+
     private
+
+    def rainbowize_string(string, attrs)
+      result = Rainbow(string)
+      result = result.bg(:green) if attrs[:source] == :llm
+      if attrs[:prompt_safe] == false
+        result = attrs[:source] == :llm ? result.color(:pink) : result.color(:red)
+      end
+      result = result.bg(:red) if (attrs[:hide] || []) - (attrs[:unhide] || []) != []
+      result
+    end
 
     def initialize_dup(attr_string, middleware_storage)
       @middleware_storage = {}

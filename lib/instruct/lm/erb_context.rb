@@ -9,10 +9,16 @@ class Instruct::LM
 
     # Expose methods and variables to the ERB template
     def method_missing(name, *args, &block)
-      # TODO: wrap this call add it to the transcript as unsafe, clear the buffer and return nil
       if @binding.local_variables.include?(name)
-        @binding.local_variable_get(name)
-      elsif @lm.respond_to?(name)
+        plain_text = Instruct::Expression::PlainText.new(@_erbout.dup, prompt_safe: @expression.should_mark_child_plain_text_as_prompt_safe?)
+        @lm.process_expression(plain_text, user_expression: @expression)
+        @_erbout.clear
+        string = @binding.local_variable_get(name)
+        # we should have a way to mark as prompt safe
+        plain_text = Instruct::Expression::PlainText.new(string.to_s, prompt_safe: false)
+        @lm.process_expression(plain_text, user_expression: @expression)
+        @_erbout.clear
+      elsif name == :gen
         @lm.send(name, *args, &block)
       else
         super

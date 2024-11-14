@@ -21,6 +21,7 @@ module Instruct::Model
 
       unless response_text.start_with?(whitespace)
         ranges_in_original.each do |original_range|
+          # TODO: hide on the llm output
           req.transcript.unhide_character_range(original_range, by: self.class)
         end
       end

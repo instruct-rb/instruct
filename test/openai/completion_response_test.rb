@@ -1,5 +1,6 @@
 require_relative '../test_helper'
 
+# These tests could be flakey as they are based on llm responses
 class OpenAICompletionResponseTeset < Minitest::Test
   def setup
     @client = OpenAI::Client.new(

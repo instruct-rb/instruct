@@ -1,7 +1,7 @@
 module Instruct::Model
   class CompletionRequest
     def initialize(transcript, **kwargs)
-      @env = kwargs
+      @env = kwargs.reject { |k, v| [:arr_name , :name].include?(k) }
       @transcript = transcript
       @unmodified_transcript = transcript.dup
     end
