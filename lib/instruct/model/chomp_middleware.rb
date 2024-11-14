@@ -16,7 +16,8 @@ module Instruct::Model
         req.transcript.hide_character_range(original_range, by: self.class)
       end
 
-      response_text = _next.call(req)
+      response = _next.call(req)
+      response_text = response.to_s
 
       unless response_text.start_with?(whitespace)
         ranges_in_original.each do |original_range|
@@ -24,7 +25,7 @@ module Instruct::Model
         end
       end
 
-      response_text
+      response
     end
 
 

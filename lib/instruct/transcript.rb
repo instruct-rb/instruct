@@ -49,7 +49,7 @@ module Instruct
 
     # Adds an element to the transcript that was created by a model response.
     def add_response_element(calling_expression:, content:, mime:, prompt_safe:, model_response:)
-      raise ArgumentError, "Expected mime to be 'text/plain'." unless mime == 'text/plain'
+      raise ArgumentError, "Expected mime to be 'text/plain'." unless mime == :'text/attr-string'
       new_range = @attr_string.append_and_get_new_range(content)
       @attr_string.add_attributes(new_range, {
         calling_expression:,

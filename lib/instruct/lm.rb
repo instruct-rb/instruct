@@ -27,15 +27,20 @@ module Instruct
       elsif expression.is_a?(Instruct::Expression::LLMFuture)
         result = resolve_llm_future(expression)
 
-        # TODO this should be a method on the expression
-        capture_result_in_variable(result, name: expression.kwargs[:name], arr_name: expression.kwargs[:arr_name])
+        llmgen = result.attributed_string.filtered_string do |attributes|
+          attributes.has_key?(:chunk)
+        end
 
+        # TODO this should be a method on the expression
+        capture_result_in_variable(llmgen, name: expression.kwargs[:name], arr_name: expression.kwargs[:arr_name])
+
+        # TODO: we will want to append the attributed string
         @transcript.add_response_element(
           calling_expression: user_expression,
-          content: result,
-          mime: 'text/plain',
+          content: result.to_s,
+          mime: :"text/attr-string",
           prompt_safe: expression.prompt_safe?,
-          model_response: Todo.new
+          model_response: llmgen
         )
       elsif expression.is_a?(Instruct::Expression::ERBFuture)
         result = render_template(expression)
@@ -125,8 +130,11 @@ module Instruct
 
     def resolve_llm_future(expression)
       req = Model::CompletionRequest.new(transcript, **expression.kwargs)
-      response_text = @completion_model.execute(req)
-      response_text
+      obj = @completion_model
+      if @completion_model.respond_to?(:middleware_chain)
+        obj = @completion_model.middleware_chain
+      end
+      response = obj.execute(req)
     end
 
 

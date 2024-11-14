@@ -2,9 +2,9 @@
 
   class VarTest < Minitest::Test
     def test_a_list_of_2_animals
-      mock = CompletionMock.new
-      mock.add_expected_completion("Please think of 2 different animals on separate lines.\nAnimal 1:", "Zebra", stop: "\n", name: :animal, arr_name: :animals)
-      mock.add_expected_completion("Please think of 2 different animals on separate lines.\nAnimal 1: Zebra\nAnimal 2:", "Lion", stop: "\n", name: :animal, arr_name: :animals)
+      mock = MockCompletionModel.new(middlewares: [Instruct::Model::ChompMiddleware])
+      mock.expect_completion("Please think of 2 different animals on separate lines.\nAnimal 1:", "Zebra", stop: "\n", name: :animal, arr_name: :animals)
+      mock.expect_completion("Please think of 2 different animals on separate lines.\nAnimal 1: Zebra\nAnimal 2:", "Lion", stop: "\n", name: :animal, arr_name: :animals)
       lm = Instruct::LM.new(completion_model: mock)
       lm += 'Please think of 2 different animals on separate lines.'
       2.times do |i|

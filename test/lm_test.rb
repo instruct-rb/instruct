@@ -15,10 +15,10 @@ class LMTest < Minitest::Test
   end
 
   def test_a_prompt_with_gen
-    mock = CompletionMock.new
+    mock = MockCompletionModel.new(middlewares: [Instruct::Model::ChompMiddleware])
     lm = Instruct::LM.new(completion_model: mock)
-    mock.add_expected_completion("1 + 1 =", " 2", stop: "\n")
-    mock.add_expected_completion("1 + 1 =", "2", stop: "\n")
+    mock.expect_completion("1 + 1 =", " 2", stop: "\n")
+    mock.expect_completion("1 + 1 =", "2", stop: "\n")
     lm2 = lm + lm.f{'1 + 1 = '} + lm.gen(stop: "\n")
     lm3 = lm + lm.f{'1 + 1 = '} + lm.gen(stop: "\n")
     mock.verify
@@ -28,9 +28,9 @@ class LMTest < Minitest::Test
   end
 
   def test_a_prompt_with_erb
-    mock = CompletionMock.new
+    mock = MockCompletionModel.new(middlewares: [Instruct::Model::ChompMiddleware])
     lm = Instruct::LM.new(completion_model: mock)
-    mock.add_expected_completion("1 + 1 =", " 2", stop: "\n")
+    mock.expect_completion("1 + 1 =", " 2", stop: "\n")
     lm += lm.f{'1 + 1 = <%= gen(stop: "\n") %>.'}
     assert_equal "1 + 1 = 2.", lm.transcript_string(show_hidden: false)
     mock.verify
