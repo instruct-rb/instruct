@@ -19,5 +19,5 @@ Gem::Specification.new do |spec|
   # removing from std lib in ruby 3.5
   spec.add_dependency "ostruct"
   spec.add_dependency "mutex_m"
-  spec.add_dependency "fiddle"
+  spec.add_dependency "attributed-string"
 end

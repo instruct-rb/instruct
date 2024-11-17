@@ -16,7 +16,7 @@ class Instruct::LM
       @variables[key] = value
     end
 
-    def capture_result_in_variable(response, arr_name: nil, name: nil)
+    def capture_result_in_variable(response, arr_name: nil, name: nil, **kwargs)
       if arr_name
         self[arr_name] ||= []
         self[arr_name] << response

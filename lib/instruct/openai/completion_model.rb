@@ -10,8 +10,8 @@ module Instruct
 
     def call(req, _next:)
       call_options = @options.merge(req.env).merge(prompt: req.prompt_object)
-      response = call_options[:stream] = OpenAICompletionResponse.new
-      client_response = @client.completions(parameters: call_options)
+      response = call_options[:stream] = OpenAICompletionResponse.new(**req.response_kwargs)
+      _client_response = @client.completions(parameters: call_options)
       response
     end
 
@@ -20,10 +20,9 @@ module Instruct
       @middlewares = middlewares
       @options = options
       @options[:model] = model
-      @client = OpenAI::Client.new(
-        access_token: access_token || ENV['OPENAI_API_KEY'],
-        log_errors:
-      )
+      @client = OpenAI::Client.new( access_token: access_token || ENV['OPENAI_API_KEY'], log_errors: ) do |f|
+        # f.adapter :async_http # would love to enable this but it's not working
+      end
     end
   end
 end

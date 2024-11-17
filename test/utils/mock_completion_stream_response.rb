@@ -1,4 +1,4 @@
-class MockCompletionStreamResponse < Instruct::Model::CompletionResponse
+class MockCompletionStreamResponse < Instruct::Gen::CompletionResponse
 
   def self.text_chunk(text_chunk, finish_reason: nil)
     return { text_chunk: text_chunk, finish_reason: self.finish_reason(finish_reason) } if finish_reason
@@ -11,7 +11,7 @@ class MockCompletionStreamResponse < Instruct::Model::CompletionResponse
 
 
   attr_reader :stream_chunks
-  def initialize(text = nil, stream_chunks: nil, finish_reason: nil)
+  def initialize(text = nil, stream_chunks: nil, finish_reason: nil, completion: Instruct::Transcript::Completion.new(Instruct::Transcript.new), **kwargs)
     if text.is_a?(Array)
       stream_chunks = text.map { |chunk| self.class.text_chunk(chunk) }
       stream_chunks.last[:finish_reason] = finish_reason || :stop
@@ -33,13 +33,14 @@ class MockCompletionStreamResponse < Instruct::Model::CompletionResponse
       end
       @stream_chunks.last[:finish_reason] = finish_reason || :stop
     end
-    super()
+    super(completion: completion, **kwargs)
   end
 
   def simulate_streaming
     while @pos < @stream_chunks.length
       chunk = @stream_chunks[@pos]
       append_text_chunk(chunk[:text_chunk]) if chunk[:text_chunk]
+      chunk_processed
       if chunk[:finish_reason]
         done chunk[:finish_reason]
         break
