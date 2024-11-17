@@ -6,13 +6,16 @@ class OpenAIBasicTest < Minitest::Test
   def test_that_it_has_a_version_number
     refute_nil ::OpenAI::VERSION
   end
-
+  def self.poem
+    "poem"
+  end
   def test_it_works
     model = Instruct::OpenAICompletionModel.new()
     lm = Instruct::LM.new(completion_model: model)
+    classic = lm.safe("classic")
     goes =  "goes"
     lm += lm.f{<<~ERB
-    The classic poem <%= goes %>:
+    The <%= classic %> <%= OpenAIBasicTest.poem %> <%= goes %>:
     Roses are red, violets are <%= gen(stop: [' ',"\n","\r",","]) %>, the honey is sweet, and so are <%= gen(stop: ["\n","\r"," ","."]) %>
     ERB
     .strip }

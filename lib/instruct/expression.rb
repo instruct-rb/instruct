@@ -1,4 +1,7 @@
 module Instruct
+  # TODO: lets turn these into string subclasses so that the + - works better
+  # this might let us do some nicer stuff with erb as well
+  # It also lets us do lm.f{} + "\n"
   module Expression
     class Expression
       # Base class for all expressions
@@ -41,8 +44,8 @@ module Instruct
         @prompt_safe || true
       end
 
-      def should_mark_child_plain_text_as_prompt_safe?
-        @prompt_safe || true
+      def should_mark_child_plain_text_as_prompt_safe?(is_erb_expression)
+        @prompt_safe || is_erb_expression
       end
 
       def should_mark_child_llm_future_as_prompt_safe?

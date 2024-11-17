@@ -1,33 +1,39 @@
 # Todos
 
+- [ ] Figure out model middleware vs user added middleware
 - [ ] freeze strings
-- [ ] Use an actual model
+- [x] Use an actual model
+  - [ ] Add anthropic
   - [ ] Load models using string
   - [ ] Override model for specific gen calls
-- [-] Roles for chat completion
-  - [-] Create a role system
-  - [-] Work out an escaping system for user content
+- [ ] Roles for chat completion
+  - [ ] Create a role system
+  - [x] Work out an escaping system for user content
 - [ ] Add deferred to lm
   - Why?
     - That way a function doesn't have to have an lm passed in
     - Ideas?
       - can we return a normal result from the function? or does it have to be an lm?
     - This could just return a SumExpression
-- [ ] Transcript
-  - [ ] Make it an object
+- [x] Transcript
+  - [x] Make it an object
   - [ ] Calculate forked paths
   - [ ] Store failed constraints
   - [ ] Store details of LLM call
-- [ ] Streaming responses
+- [x] Streaming responses
+  - [ ] Client side stops
+    - I think throw catch is the best way as that should close the request
+    - see example https://github.com/alexrudall/ruby-openai/issues/265
+    - client side retries could be done similarly
   - Why?
     - Useful for displaying a transcript as it's being generated
     - Once we work out how our constraints model works, we can
     stop a response that doesn't meet our constraints immediately
     and retry or stop
-  - [ ] Create a streaming completion mockable model
-  - [ ] Make streaming responses the default
+  - [x] Create a streaming completion mockable model
+  - [x] Make streaming responses the default
     - Why?
-  - [ ] Stream responses
+  - [x] Stream responses
 - [ ] Constraints
   - [ ] Regex constraints
     - Why?
@@ -47,13 +53,16 @@
       - CFGs
         https://github.com/famished-tiger/Rley
     - Ideas
-      - XML xs schema useful for xml based responses
+      - XML / HTML might be a nice way to display attributed strings
 - [ ] Debugging
   - Why?
     - If we could create something like a stacktrace of the code + stacktrace of the LLM calls
       and their transcripts, we could make debugging llm "programs" much easier.
   - [ ] What would a stacktrace of LLM calls + stacktrace look like?
   - [ ] Visualize the transcript
+    - [x] Visualize in the console with colors
+    - [ ] Connect to instruct-web with middleware
+    - [ ] Stream responses in instruct-web view with actioncable
   - [ ] Make it easy to take an llm program and debug it with evals
     - [ ] It should be easy to debug sub prompts
 - [ ] Support Anthropic cached message
@@ -71,7 +80,7 @@
 - [ ] add a way so that if a middleware runs another request and completion we can
   store that but without breaking the transcript. (perhaps we provide the current lm)
   and the middleware can call lm.gen(req) and return the response.
-- [ ] add prompt_safe to #f() so that it can be set to override the default
+- [x] add prompt_safe to #f() so that it can be set to override the default
   - [ ] write a test for this
 
 # Chomp Middleware

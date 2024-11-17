@@ -44,15 +44,25 @@ module Instruct
         )
       elsif expression.is_a?(Instruct::Expression::ERBFuture)
         result = render_template(expression)
-        @transcript.add_prompt_element(
-          calling_expression: user_expression,
-          content: result,
-          mime: 'text/plain',
-          prompt_safe: expression.prompt_safe?
-        )
+        result.each do |arr|
+          r, prompt_safe = arr
+          @transcript.add_prompt_element(
+            calling_expression: user_expression,
+            content: r,
+            mime: 'text/plain',
+            prompt_safe: expression.prompt_safe?
+          )
+        end
       else
         raise Todo
       end
+    end
+
+    class LMSafe < String
+    end
+
+    def safe(string)
+      LMSafe.new(string)
     end
 
     def f(&block)
@@ -71,9 +81,13 @@ module Instruct
       #
       # partial output contains the plain text portion of the erb template
       # and
-      partial_output, erb_future_expression = called_within_erb_template
-      plain_text = Instruct::Expression::PlainText.new(partial_output, prompt_safe: erb_future_expression.should_mark_child_plain_text_as_prompt_safe?)
-      process_expression(plain_text, user_expression: erb_future_expression)
+      partial_output, erb_future_expression, unsafe = called_within_erb_template
+      partial_output = unsafe_split(partial_output, unsafe)
+      partial_output.each do |arr|
+        text, prompt_safe = arr
+        plain_text = Instruct::Expression::PlainText.new(text, prompt_safe: erb_future_expression.should_mark_child_plain_text_as_prompt_safe?(prompt_safe))
+        process_expression(plain_text, user_expression: erb_future_expression)
+      end
       llm_future = Instruct::Expression::LLMFuture.new(**kwargs.merge(prompt_safe: erb_future_expression.should_mark_child_llm_future_as_prompt_safe?))
       process_expression(llm_future, user_expression: erb_future_expression)
       nil # we're adding directly to transcript so we don't put anything in _erbout
@@ -108,6 +122,7 @@ module Instruct
       # end
       # .join("")
     end
+    @@x = false
 
     def render_template(expression)
       block = expression.template_block
@@ -117,16 +132,41 @@ module Instruct
       erb_context = Instruct::LM::ERBContext.new(self, block.binding, expression)
 
       # Create a new ERB template without specifying eoutvar
-      erb_template = ERB.new(template_str, trim_mode: '-', eoutvar: '@_erbout')
+      compiler = ERB::Compiler.new('-')
+      compiler.put_cmd = "@_erbout.<<"
+      compiler.insert_cmd = "unsafe_print"
+      compiler.pre_cmd = ["@_erbout = +''"]
+      compiler.post_cmd = ["@_erbout"]
+      # compiler.put_cmd = "unsafe_print"
+      src, _, frozen_string = compiler.compile(template_str)
+
+      binding.irb
+      output = eval(src, erb_context.instance_eval { binding }, '(erb without file)', 0)
+
+
+      # erb_template = ERB.new(template_str, trim_mode: '-', eoutvar: '@_erbout')
+      # compiler = erb_template.make_compiler('-')
+      # compiler.put_cmd = "unsafe_print"
+      # erb_template.set_eoutvar(compiler, '@_erbout')
 
       # Render the template within the context
-      output = erb_template.result(erb_context.instance_eval { binding })
-
-      output
+      # output = erb_template.result(erb_context.instance_eval { binding })
+      unsafe_split(output, erb_context.unsafe)
     end
 
 
     private
+
+    def unsafe_split(string, unsafe)
+      arr = string.split(unsafe)
+      arr.map.with_index do |str, i|
+        if i.odd?
+          [str, false]
+        else
+          [str, true]
+        end
+      end
+    end
 
     def resolve_llm_future(expression)
       req = Model::CompletionRequest.new(transcript, **expression.kwargs)
