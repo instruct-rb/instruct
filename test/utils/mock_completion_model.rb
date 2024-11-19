@@ -42,6 +42,7 @@ class MockCompletionModel
       raise ArgumentError, "Expected response to be a string or MockCompletionStreamResponse, but got: '#{response}'"
     end
 
+    response.stream_handlers = req.stream_handlers
     response.simulate_streaming
     @position += 1
 

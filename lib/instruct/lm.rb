@@ -6,7 +6,8 @@ module Instruct
     def initialize(completion_model: nil, transcript: nil, unprocessed_expressions: [], variables: {})
       initialize_variables(variables)
       @completion_model = completion_model
-      @transcript = transcript.dup || Transcript.new
+      @transcript = transcript.dup || TranscriptString.new
+      @streaming_transcript = nil
       unprocessed_expressions.each { |expression| process_expression(expression) }
     end
 
@@ -15,86 +16,27 @@ module Instruct
       Instruct::LM.new(**instance_vars.merge(kwargs))
     end
 
-    def process_expression(expression, user_expression: nil)
-      user_expression ||= expression
-      if expression.is_a?(Instruct::Expression::PlainText)
-        @transcript.add_prompt_element(
-          calling_expression: user_expression,
-          content: expression.text,
-          mime: 'text/plain',
-          prompt_safe: expression.prompt_safe?
-        )
-      elsif expression.is_a?(Instruct::Expression::LLMFuture)
-        result = resolve_llm_future(expression)
-
-        llmgen = result.attributed_string.filtered_string do |attributes|
-          attributes.has_key?(:chunk)
-        end
-
-        # TODO this should be a method on the expression
-        capture_result_in_variable(llmgen, name: expression.kwargs[:name], arr_name: expression.kwargs[:arr_name])
-
-        # TODO: we will want to append the attributed string
-        @transcript.add_response_element(
-          calling_expression: user_expression,
-          content: result.to_s,
-          mime: :"text/attr-string",
-          prompt_safe: expression.prompt_safe?,
-          model_response: llmgen
-        )
-      elsif expression.is_a?(Instruct::Expression::ERBFuture)
-        result = render_template(expression)
-        result.each do |arr|
-          r, prompt_safe = arr
-          @transcript.add_prompt_element(
-            calling_expression: user_expression,
-            content: r,
-            mime: 'text/plain',
-            prompt_safe: expression.prompt_safe?
-          )
-        end
-      else
-        raise Todo
+    def process_expression(expression)
+      # maybe add finalized and an unfinalized transcript string if we need the streamed result in lm
+      expression.process(lm: self) do | result |
+        result.add_attrs(expression: expression)
+        @transcript.concat(result)
       end
-    end
-
-    class LMSafe < String
-    end
-
-    def safe(string)
-      LMSafe.new(string)
     end
 
     def f(&block)
-      Instruct::Expression::ERBFuture.new(block)
-      # prompt_content = block_given? ? render_template(&block) : raise(ArgumentError, 'Block required')
-      # Prompt.new(:text, prompt_content)
+      Instruct::Expression::ERBFuture.new(template: block.call, binding: block.binding)
     end
 
-    def gen(**kwargs)
-      # TODO: refactor most of this into erb context, it'll make this way simpler
-      called_within_erb_template = kwargs.delete(:_instruct_erb_context)
-      return Instruct::Expression::LLMFuture.new(**kwargs) unless called_within_erb_template
 
-      # if we arrive here, we are in the context of an ERBFuture expression
-      # that is having its ERB template rendered as it's being processed
-      #
-      # partial output contains the plain text portion of the erb template
-      # and
-      partial_output, erb_future_expression, unsafe = called_within_erb_template
-      partial_output = unsafe_split(partial_output, unsafe)
-      partial_output.each do |arr|
-        text, prompt_safe = arr
-        plain_text = Instruct::Expression::PlainText.new(text, prompt_safe: erb_future_expression.should_mark_child_plain_text_as_prompt_safe?(prompt_safe))
-        process_expression(plain_text, user_expression: erb_future_expression)
-      end
-      llm_future = Instruct::Expression::LLMFuture.new(**kwargs.merge(prompt_safe: erb_future_expression.should_mark_child_llm_future_as_prompt_safe?))
-      process_expression(llm_future, user_expression: erb_future_expression)
-      nil # we're adding directly to transcript so we don't put anything in _erbout
+    def gen(transcript: self.transcript, deferred: true, **kwargs, &block)
+      return Instruct::Expression::LLMFuture.new(**kwargs) if deferred
+
+      _gen(transcript:, **kwargs, &block)
     end
 
     def +(other)
-      other = Instruct::Expression::PlainText.new(other, prompt_safe: false) if other.is_a?(String)
+      other = Instruct::Expression::PlainText.new(other, safe: false) if other.is_a?(String)
       raise ArgumentError unless other.is_a? (Instruct::Expression::Expression)
       if other.is_a?(Instruct::Expression::Concat)
         return other.expressions.reduce(self, :+)
@@ -104,77 +46,23 @@ module Instruct
     end
 
     def transcript_string(show_hidden: true)
-      return @transcript.to_s(show_hidden:)
+      return @transcript.to_s
     end
-
-    def transcript_pretty_string
-      raise Todo, "move this to transcript class"
-      # return transcript_string unless defined? Rainbow
-      # transcript.map do |entry|
-        # case entry[:type]
-        # when :llm
-        #   Rainbow(entry[:text]).bg(:green)
-        # when :text
-        #   Rainbow(entry[:text])
-        # else
-        #   Rainbow(entry[:text]).underline
-        # end
-      # end
-      # .join("")
-    end
-    @@x = false
-
-    def render_template(expression)
-      block = expression.template_block
-      template_str = block.call
-
-      # Create a custom context for the ERB template
-      erb_context = Instruct::LM::ERBContext.new(self, block.binding, expression)
-
-      # Create a new ERB template without specifying eoutvar
-      compiler = ERB::Compiler.new('-')
-      compiler.put_cmd = "@_erbout.<<"
-      compiler.insert_cmd = "unsafe_print"
-      compiler.pre_cmd = ["@_erbout = +''"]
-      compiler.post_cmd = ["@_erbout"]
-      # compiler.put_cmd = "unsafe_print"
-      src, _, frozen_string = compiler.compile(template_str)
-
-      binding.irb
-      output = eval(src, erb_context.instance_eval { binding }, '(erb without file)', 0)
-
-
-      # erb_template = ERB.new(template_str, trim_mode: '-', eoutvar: '@_erbout')
-      # compiler = erb_template.make_compiler('-')
-      # compiler.put_cmd = "unsafe_print"
-      # erb_template.set_eoutvar(compiler, '@_erbout')
-
-      # Render the template within the context
-      # output = erb_template.result(erb_context.instance_eval { binding })
-      unsafe_split(output, erb_context.unsafe)
-    end
-
 
     private
 
-    def unsafe_split(string, unsafe)
-      arr = string.split(unsafe)
-      arr.map.with_index do |str, i|
-        if i.odd?
-          [str, false]
-        else
-          [str, true]
-        end
+    def _gen(transcript:, **kwargs, &block)
+      model = kwargs.delete(:model) || @completion_model
+      request = Model::CompletionRequest.new(transcript, **kwargs)
+      @streaming_transcript = transcript.dup
+      request.add_stream_handler do |response|
+        @streaming_transcript.concat(response)
+        yield(@streaming_transcript) if block_given?
       end
-    end
-
-    def resolve_llm_future(expression)
-      req = Model::CompletionRequest.new(transcript, **expression.kwargs)
-      obj = @completion_model
-      if @completion_model.respond_to?(:middleware_chain)
-        obj = @completion_model.middleware_chain
-      end
-      response = obj.execute(req)
+      response = request.execute(model)
+      attr_string = response.attributed_string
+      capture_result_in_variable(attr_string, **kwargs)
+      attr_string
     end
 
 

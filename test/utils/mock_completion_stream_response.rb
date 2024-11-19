@@ -44,6 +44,7 @@ class MockCompletionStreamResponse < Instruct::Model::CompletionResponse
         done chunk[:finish_reason]
         break
       end
+      chunk_processed
       @pos += 1
     end
   end

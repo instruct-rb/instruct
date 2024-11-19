@@ -1,43 +1,56 @@
 class Instruct::LM
   class ERBContext
-    attr_reader :unsafe
-    def initialize(lm, binding, expression, safe)
+    using AttributedString::Refinements
+    # This class needs to only have methods that are used within the ERB
+    # scope as otherwise they will be called by the ERB template instead
+    # of local vars.
+    def initialize(erb_future:, lm:, template:, _binding:, &result)
+      super()
       @lm = lm
-      @expression = expression
-      @unsafe = SecureRandom.hex(12)
-      @binding = binding
-      @_erbout = ''  # Use ERB's default output buffer variable
+      @erb_future = erb_future
+      @future_expressions = []
+      @binding = _binding
+      @result_block = result
+      @_erbout = TranscriptString.new('')
+
+      compiler = ERB::Compiler.new('-')
+      compiler.put_cmd = "@_erbout.safe_concat"
+      compiler.insert_cmd = "@_erbout.concat"
+      compiler.pre_cmd = ["@_erbout = + TranscriptString.new('')"]
+      compiler.post_cmd = ["@_erbout"]
+
+      src, _, _ = compiler.compile(template)
+
+      output = eval(src, binding, '(erb without file)', 0)
+
+      @result_block.call(output)
     end
 
-    def unsafe_print(string)
-      # TODO: this doesn't work
-      # Follow https://yehudakatz.com/2010/02/01/safebuffers-and-rails-3-0/
-      # Once attributed strings have append, we'll just make the safebuffer an attributed string
-      if string.is_a?(LMSafe)
-      # this will work if safe is defined at the lm level, we can then add a safe_code that stops the unsafe code
-        @_erbout.<< string
-      else
-        @_erbout.<< unsafe
-        @_erbout.<< string
-        @_erbout.<< unsafe
-      end
+    def raw(string)
+      @_erbout.safe_concat(string)
+      ""
     end
 
     # Expose methods and variables to the ERB template
     def method_missing(name, *args, &block)
       if @binding.local_variables.include?(name)
         @binding.local_variable_get(name)
-      elsif name == :gen
-        @lm.send(name, *args, &block)
       else
         super
       end
     end
 
     def gen(**kwargs)
-      kwargs[:_instruct_erb_context] = [@_erbout.dup, @expression, @unsafe]
+      transcript = @lm.transcript + @_erbout
+      @result_block.call(@_erbout)
       @_erbout.clear
-      @lm.gen(**kwargs)
+      ts = @erb_future.gen(transcript: transcript, **kwargs)
+      @result_block.call(ts)
+      ""
+    end
+
+    def captured(name)
+      @lm[name]
     end
 
     # No need for custom concat method

@@ -9,6 +9,7 @@ gem "ruby-openai"
 # development
 gem "rake"
 gem "minitest"
+gem "attributed-string", github: "mackross/attributed-string-rb", branch: "main"
 
 # documentation server
 gem "yard"

@@ -70,7 +70,7 @@
 - [ ] Guardrails
   - [ ] Async pre guards
   - Consider using promp_safe not just as a flag, but as an object which captures what checks have been done
-    - This might work well as the way prompt_safe gets passed around in the middleware mappings could get
+    - This might work well as the way safe gets passed around in the middleware mappings could get
       complicated if there are other bits of data to be attached
   - Let the transcript keep track of any guards (pre and post), like jailbreaks, etc.
   - This way we don't have to keep track of them for multiple executions of the same prompt
@@ -80,7 +80,7 @@
 - [ ] add a way so that if a middleware runs another request and completion we can
   store that but without breaking the transcript. (perhaps we provide the current lm)
   and the middleware can call lm.gen(req) and return the response.
-- [x] add prompt_safe to #f() so that it can be set to override the default
+- [x] add safe to #f() so that it can be set to override the default
   - [ ] write a test for this
 
 # Chomp Middleware

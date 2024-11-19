@@ -8,9 +8,10 @@ module Instruct::Model
       finished
     end
 
-    def initialize
+    attr_writer :stream_handlers
+    def initialize(stream_handlers: [])
+      @stream_handlers = stream_handlers
       @chunks = 0
-      reset_last_chunk_ranges
     end
 
     # Streaming Response Handlers should override this method
@@ -19,14 +20,17 @@ module Instruct::Model
     end
 
     def append_text_chunk(text_chunk)
-      range = response_buffer.append_and_get_new_range(text_chunk)
-      response_buffer.add_attributes(range, { chunk: @chunks + 1 })
-      @last_chunk_ranges << range
+      text_chunk = TranscriptString.new(text_chunk) unless text_chunk.is_a?(TranscriptString)
+      text_chunk.add_attrs(0...text_chunk.length, stream_chunk: @chunks + 1 )
+      response_buffer << text_chunk
     end
 
     def chunk_processed
+      ts = response_buffer.dup
+      @stream_handlers.each do |handler|
+        handler.call(ts, @chunks)
+      end
       @chunks += 1
-      reset_last_chunk_ranges
     end
 
     def done(finish_reason)
@@ -35,7 +39,7 @@ module Instruct::Model
     end
 
     def to_s
-      response_buffer.string
+      response_buffer.to_s
     end
 
     def attributed_string
@@ -46,14 +50,11 @@ module Instruct::Model
 
     private
 
-    def reset_last_chunk_ranges
-      @last_chunk_ranges = []
-    end
 
     # @api private
-    # @return [Instruct::AttributedString] the buffer of text
+    # @return [TranscriptString] the buffer of text
     def response_buffer
-      @response_buffer ||= Instruct::AttributedString.new
+      @response_buffer ||= TranscriptString.new
     end
 
 

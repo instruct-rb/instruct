@@ -1,5 +1,5 @@
 # A string that can have key-value attributes applied to ranges.
-class Instruct::AttributedString
+class Instruct::AttributedxString
   attr_reader :string
   def initialize(string = "")
     @string = string

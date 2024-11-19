@@ -12,7 +12,7 @@ module Instruct
 
     attr_reader :attr_string
     def initialize
-      @attr_string = Instruct::AttributedString.new
+      @attr_string = Instruct::AttributedxString.new
     end
 
     def middleware_storage
@@ -24,13 +24,13 @@ module Instruct
     # @param calling_expression [Instruct::Expression] The expression created by the library caller that generated the transcript entry.
     # @param content [String] The content of the transcript entry.
     # @param mime [String] The mime type of the transcript entry (must be text/plain).
-    # @param prompt_safe [Boolean] Whether the content came from a safe source (i.e. developer) or is unsafe and from a user or llm. Similar to html_safe.
-    def add_prompt_element(calling_expression:, content:, mime:, prompt_safe:)
+    # @param safe [Boolean] Whether the content came from a safe source (i.e. developer) or is unsafe and from a user or llm. Similar to html_safe.
+    def add_prompt_element(calling_expression:, content:, mime:, safe:)
       raise ArgumentError, "Expected mime to be 'text/plain'." unless mime == 'text/plain'
       new_range = @attr_string.append_and_get_new_range(content)
       @attr_string.add_attributes(new_range, {
         calling_expression:,
-        prompt_safe:,
+        safe:,
         source: :prompt
       })
     end
@@ -48,19 +48,18 @@ module Instruct
     end
 
     # Adds an element to the transcript that was created by a model response.
-    def add_response_element(calling_expression:, content:, mime:, prompt_safe:, model_response:)
+    def add_response_element(calling_expression:, content:, mime:, safe:, model_response:)
       raise ArgumentError, "Expected mime to be 'text/plain'." unless mime == :'text/attr-string'
       new_range = @attr_string.append_and_get_new_range(content)
       @attr_string.add_attributes(new_range, {
         calling_expression:,
-        prompt_safe:,
+        safe:,
         source: :llm,
       })
     end
 
     def ==(other)
       self.class == other.class && @attr_string == other.get_instance_variable(:@attr_string)
-      binding.irb
     end
 
     def to_s(show_hidden: true)
@@ -79,7 +78,7 @@ module Instruct
     end
 
     def pretty_string
-      change_based_on_attrs = [:source, :hide, :unhide, :prompt_safe]
+      change_based_on_attrs = [:source, :hide, :unhide, :safe]
       result = ""
       current_range = ""
       last_attrs = {}
@@ -101,7 +100,7 @@ module Instruct
     def rainbowize_string(string, attrs)
       result = Rainbow(string)
       result = result.bg(:green) if attrs[:source] == :llm
-      if attrs[:prompt_safe] == false
+      if attrs[:safe] == false
         result = attrs[:source] == :llm ? result.color(:pink) : result.color(:red)
       end
       result = result.bg(:red) if (attrs[:hide] || []) - (attrs[:unhide] || []) != []

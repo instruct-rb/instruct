@@ -4,6 +4,21 @@ module Instruct::Model
       @env = kwargs.reject { |k, v| [:arr_name , :name].include?(k) }
       @transcript = transcript
       @unmodified_transcript = transcript.dup
+      @prompt_transformers = []
+      @stream_handlers = []
+    end
+
+    def id
+      @id ||= SecureRandom.hex(10)
+    end
+
+    # returns the respose a TranscriptString from the model
+    def execute(model)
+      # TODO: this logic can probably move onto the model
+      if model.respond_to?(:middleware_chain)
+        model = model.middleware_chain
+      end
+      model.execute(self)
     end
 
     def env
@@ -15,19 +30,34 @@ module Instruct::Model
     end
 
     def prompt_object
-      transcript.to_s
+      prompt_object = @transcript.dup
+      @prompt_transformers.each do |transformer|
+        prompt_object = transformer.call(prompt_object)
+      end
+      prompt_object
     end
 
-    # This might be a nice API for adding middleware which can modify the transcript
-    # for different models, or to add extra information
-    #def add_transcript_transform(&block)
-    #end
+    # Add a block that will map the prompt to a transformed prompt Runs in the
+    # order they are added. It will be passed the prompt object and should
+    # return a new or modified prompt object
+    def add_prompt_transform(&block)
+      @prompt_transformers << block
+    end
 
-    # This might be a nice API to have for streaming responses back to HTML
-    # essentially allows middleware to add a handler that will be called
-    # with a buffer of the currently streamed response
-    #def add_stream_handler(&block)
-    #end
+    # Add a block to handle the streamed responses, it will be passed
+    # the response TranscriptString and it can modify it. Keep
+    # in mind that this will be called each time a new chunk is added.
+    # The same logic will often be used in the middleware to check
+    # the final response.
+    # These are called in reverse order of addition.
+    # array containing [status, transcript_string]
+    def add_stream_handler(&block)
+      @stream_handlers << block
+    end
+
+    def stream_handlers
+      @stream_handlers.reverse
+    end
 
 
   end

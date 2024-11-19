@@ -5,9 +5,21 @@ module Instruct
   module Expression
     class Expression
       # Base class for all expressions
-      attr_reader :prompt_safe
-      def prompt_safe?
-       @prompt_safe == true
+      attr_reader :safe
+      def safe?
+       @safe == true
+      end
+
+      # This is called by the lm processing the expression, it should
+      # call the block with (string [TranscriptString], finalized [bool])
+      #
+      # When not finalized, the string will not be appended to the transcript
+      # but it will still be usable in debugging and stream visualizations.
+      #
+      # This lets middleware decide after a generation if they would like to retry
+      # or finalize the string.
+      def process(lm:, &block)
+        raise NotImplementedError, "this should return a transcript string which can be appended to the an lm's current transcript"
       end
 
       def +(other)
@@ -17,50 +29,44 @@ module Instruct
     end
 
     class PlainText < Expression
-      attr_reader :text
 
-      def initialize(text, prompt_safe:)
-        @text = text
-        @prompt_safe = prompt_safe
+      def initialize(text, safe: false)
+        @ts = text.is_a?(TranscriptString) ? text : TranscriptString.new(text)
+        range = 0..@ts.length - 1
+        @ts.add_attrs(range, safe: safe, _force: true) unless safe.nil?
       end
+
+      def process(lm:, &block) = yield(@ts, true)
+      def inspect = @ts.inspect
+      def to_s = @ts.to_s
     end
 
+
+    # This is just a tiny wrapper around completion request
     class LLMFuture < Expression
       attr_reader :kwargs
 
-      def initialize(prompt_safe: false, **kwargs)
+      def initialize(safe: false, **kwargs)
         @kwargs = kwargs
       end
-    end
 
-    class ERBFuture < Expression
-      attr_reader :template_block
-      def initialize(template_block, prompt_safe: nil)
-        @template_block = template_block
-        @prompt_safe = prompt_safe
-      end
-
-      def prompt_safe?
-        @prompt_safe || true
-      end
-
-      def should_mark_child_plain_text_as_prompt_safe?(is_erb_expression)
-        @prompt_safe || is_erb_expression
-      end
-
-      def should_mark_child_llm_future_as_prompt_safe?
-        @prompt_safe || false
+      def process(lm:, &result)
+        resp = lm.gen(deferred: false, **kwargs)
+        result.call(resp)
       end
     end
 
     class Concat < Expression
-      attr_reader :expressions
 
+      attr_reader :expressions
       def initialize(*expressions)
         raise ArgumentError, 'At least one expression is required' if expressions.empty?
         raise ArgumentError, 'All expressions must be of type Expression' unless expressions.all? { |expression| expression.is_a?(Expression) }
         @expressions = expressions.flatten
       end
+
+      def to_s =  @expressions.map(&:to_s).join(' + ')
+      def inspect = "<Concat: #{to_s}>"
     end
   end
 end
