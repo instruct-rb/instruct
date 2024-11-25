@@ -5,6 +5,8 @@ require 'ostruct'
 # dependencies
 require 'attributed-string'
 
+
+
 # utils
 require_relative "instruct/utils/middleware_chain"
 require_relative "instruct/utils/attributed_string"

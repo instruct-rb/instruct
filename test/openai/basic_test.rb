@@ -12,10 +12,9 @@ class OpenAIBasicTest < Minitest::Test
   def test_it_works
     model = Instruct::OpenAICompletionModel.new()
     lm = Instruct::LM.new(completion_model: model)
-    classic = lm.safe("classic")
     goes =  "goes"
     lm += lm.f{<<~ERB
-    The <%= classic %> <%= OpenAIBasicTest.poem %> <%= goes %>:
+    The <%= OpenAIBasicTest.poem %> <%= goes %>:
     Roses are red, violets are <%= gen(stop: [' ',"\n","\r",","]) %>, the honey is sweet, and so are <%= gen(stop: ["\n","\r"," ","."]) %>
     ERB
     .strip }

@@ -20,10 +20,9 @@ module Instruct
       @middlewares = middlewares
       @options = options
       @options[:model] = model
-      @client = OpenAI::Client.new(
-        access_token: access_token || ENV['OPENAI_API_KEY'],
-        log_errors:
-      )
+      @client = OpenAI::Client.new( access_token: access_token || ENV['OPENAI_API_KEY'], log_errors: ) do |f|
+        # f.adapter :async_http # would love to enable this but it's not working
+      end
     end
   end
 end
