@@ -1,0 +1,61 @@
+module Instruct
+ class Gen
+   attr_accessor :transcript, :model, :kwargs
+   attr_reader :results
+   def initialize(transcript:, model:, **kwargs)
+     @transcript = transcript
+     @model = model
+     @kwargs = kwargs
+     @results = []
+   end
+
+   def ==(other)
+     return false unless other.is_a?(Gen)
+     # skip looking at transcript and results for now as it makes two prompts not equal with a gen
+     # that has run and one that hasn't
+     @model == other.model && @kwargs == other.kwargs
+   end
+
+   def completed?
+     @results.any?
+   end
+
+   def call(**kwargs, &streaming_block)
+     kwargs = @kwargs.merge(kwargs)
+     completion = Transcript::Completion.new(@transcript.dup, **kwargs)
+     transcript = transcript_without_gen_attachment
+     request = Model::CompletionRequest.new(transcript, completion, **kwargs)
+     request.add_stream_handler do |response|
+       yield(transcript + response) if block_given?
+     end
+     response = request.execute(@model)
+     completion_string = response.attributed_string
+     set_updated_transcript_on_completion(completion_string, request.transcript)
+     # attr_string.add_arr_attrs()
+     # capture_result_in_variable(attr_string, **kwargs)
+     @results << completion_string
+     completion_string
+   end
+
+   def transcript_without_gen_attachment
+     if @transcript.attachment_at(@transcript.length - 1) == self
+       @transcript[...-1]
+     else
+       @transcript.dup
+     end
+   end
+
+   def set_updated_transcript_on_completion(completion, transcript)
+     completion.send(:updated_transcript=, transcript.dup)
+   end
+
+   def to_s
+     if @result.nil?
+       "<Instruct::Gen>"
+     else
+        "<Instruct::Gen call_count=#{result.length}>"
+     end
+   end
+
+ end
+end

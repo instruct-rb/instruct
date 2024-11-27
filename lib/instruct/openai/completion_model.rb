@@ -10,7 +10,7 @@ module Instruct
 
     def call(req, _next:)
       call_options = @options.merge(req.env).merge(prompt: req.prompt_object)
-      response = call_options[:stream] = OpenAICompletionResponse.new(stream_handlers: req.stream_handlers)
+      response = call_options[:stream] = OpenAICompletionResponse.new(**req.response_kwargs)
       _client_response = @client.completions(parameters: call_options)
       response
     end

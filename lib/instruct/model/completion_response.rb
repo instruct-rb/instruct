@@ -9,7 +9,8 @@ module Instruct::Model
     end
 
     attr_writer :stream_handlers
-    def initialize(stream_handlers: [])
+    def initialize(stream_handlers: [], completion: )
+      @response_buffer = completion
       @stream_handlers = stream_handlers
       @chunks = 0
     end
@@ -20,9 +21,9 @@ module Instruct::Model
     end
 
     def append_text_chunk(text_chunk)
-      text_chunk = TranscriptString.new(text_chunk) unless text_chunk.is_a?(TranscriptString)
-      text_chunk.add_attrs(0...text_chunk.length, stream_chunk: @chunks + 1 )
-      response_buffer << text_chunk
+      text_chunk = AttributedString.new(text_chunk) unless text_chunk.is_a?(AttributedString)
+      text_chunk.add_attrs(stream_chunk: @chunks + 1)
+      response_buffer.concat(text_chunk)
     end
 
     def chunk_processed
@@ -52,9 +53,9 @@ module Instruct::Model
 
 
     # @api private
-    # @return [TranscriptString] the buffer of text
+    # @return [Transcript] the buffer of text
     def response_buffer
-      @response_buffer ||= TranscriptString.new
+      @response_buffer
     end
 
 

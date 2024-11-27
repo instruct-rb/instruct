@@ -1,120 +1,151 @@
 module Instruct
-  # The transcript is an ordered record of prompts and language model responses.
-  # When an expression is processed by an {Instruct::LM} instance a new entry is added to the transcript.
-  #
-  # When an expression for a completion request is processed by {Instruct::LM}
-  # the transcript is the primary argument in the request.
-  # The {Instruct::Model::CompletionRequest request} is then sent to a model (comprised of a {file:docs/prompt-completion-middleware.md middleware}) and
-  # a completion model such as GPT-4o). The middleware pipeline transforms the
-  # transcript for the completion model and then transforms the response from
-  # the completion model before adding it to the transcript.
-  class Transcript
+  class Transcript < AttributedString
 
-    attr_reader :attr_string
-    def initialize
-      @attr_string = Instruct::AttributedxString.new
+    def call(**kwargs)
+      raise ArgumentError, "cannot add transcript to call on transcript" if kwargs[:transcript]
+
+      prompt = Transcript.new
+
+      gens, substrings = split_substrings_and_gen_attachments
+      results = []
+
+      gens.each_with_index do |gen, i|
+        prompt += substrings[i]
+        gen.transcript = prompt
+        completion = gen.call(**kwargs)
+        prompt += completion
+        results << completion
+      end
+
+      results.length > 1 ? results : results.first
     end
 
-    def middleware_storage
-      @middleware_storage ||= {}
-    end
 
-    # Adds an element to the transcript that was created by a prompt.
-    #
-    # @param calling_expression [Instruct::Expression] The expression created by the library caller that generated the transcript entry.
-    # @param content [String] The content of the transcript entry.
-    # @param mime [String] The mime type of the transcript entry (must be text/plain).
-    # @param safe [Boolean] Whether the content came from a safe source (i.e. developer) or is unsafe and from a user or llm. Similar to html_safe.
-    def add_prompt_element(calling_expression:, content:, mime:, safe:)
-      raise ArgumentError, "Expected mime to be 'text/plain'." unless mime == 'text/plain'
-      new_range = @attr_string.append_and_get_new_range(content)
-      @attr_string.add_attributes(new_range, {
-        calling_expression:,
-        safe:,
-        source: :prompt
-      })
-    end
-
-    def hide_character_range(range, by:)
-      @attr_string.add_arr_attributes(range, {
-        hide: by
-      })
-    end
-
-    def unhide_character_range(range, by:)
-      @attr_string.add_arr_attributes(range, {
-        unhide: by
-      })
-    end
-
-    # Adds an element to the transcript that was created by a model response.
-    def add_response_element(calling_expression:, content:, mime:, safe:, model_response:)
-      raise ArgumentError, "Expected mime to be 'text/plain'." unless mime == :'text/attr-string'
-      new_range = @attr_string.append_and_get_new_range(content)
-      @attr_string.add_attributes(new_range, {
-        calling_expression:,
-        safe:,
-        source: :llm,
-      })
-    end
-
-    def ==(other)
-      self.class == other.class && @attr_string == other.get_instance_variable(:@attr_string)
-    end
-
-    def to_s(show_hidden: true)
-      if show_hidden
-        @attr_string.string
+    def +(other, *args, apply_completions: true)
+      if other.is_a?(Array) && other.all? { |obj| obj.is_a?(Transcript::Completion) } && !other.empty?
+        return self.+(*(other + args), apply_completions: apply_completions)
+      end
+      result = if other.is_a?(Transcript::Completion) && apply_completions
+        other.apply_to_transcript(self.dup)
       else
-        @attr_string.filtered_string do | attributes |
-          next !attributes.has_key?(:hide) unless attributes.has_key?(:unhide)
-          (attributes[:hide] - attributes[:unhide]).empty?
-        end
+        super(other)
+      end
+      args.empty? ? result : result.+(*args, apply_completions:)
+    end
+
+    # Unlike normal strings << is not the same as concat. << first performs the concat, then runs call on the
+    # new transcript, before adding the result to the transcript.
+    def <<(other, *args, **kwargs)
+      concat(other, *args, perform_call: true, apply_completions: true, **kwargs)
+    end
+
+    def safe_concat(string)
+      string = Transcript.new(string, safe: true) if string.is_a?(String)
+      concat(string)
+    end
+
+    def concat(other, *args, perform_call: false, apply_completions: false)
+      if other.is_a?(Array) && other.all? { |obj| obj.is_a?(Transcript::Completion) } && !other.empty?
+        return concat(*(other + args), perform_call:, apply_completions: )
+      end
+      if other.is_a?(Transcript::Completion) && apply_completions
+        other.apply_to_transcript(self)
+      else
+        super(other)
+      end
+      if args.size.positive?
+        return self.concat(*args, perform_call: perform_call, apply_completions: apply_completions)
+      end
+      if perform_call && result = self.call
+        self.concat(result, perform_call: false, apply_completions: true)
+      else
+        self
       end
     end
 
-    def dup
-      Instruct::Transcript.new.send(:initialize_dup, @attr_string, @middleware_storage.dup || {})
+    def split_substrings_and_gen_attachments
+      gens = []
+      substrings = []
+      deferred_gens = self.attachments_with_positions.filter { |obj| obj[:attachment].is_a?(Instruct::Gen) }
+      next_substring_index = 0
+      deferred_gens.each do |obj|
+        position = obj[:position]
+        substrings << self[next_substring_index..position]
+        gens << obj[:attachment]
+        next_substring_index = position + 1
+      end
+      return [gens, substrings]
     end
 
-    def pretty_string
-      change_based_on_attrs = [:source, :hide, :unhide, :safe]
-      result = ""
-      current_range = ""
-      last_attrs = {}
-      @attr_string.each_char do |char, attributes|
-        attrs = attributes.slice(*change_based_on_attrs)
-        if last_attrs != attrs
-          current_range = rainbowize_string(current_range, last_attrs) unless current_range.empty?
-          result += current_range
-          current_range = ""
-          last_attrs = attrs
+
+
+    def to_s(gen: :emoji)
+      string = super()
+      deferred_gens = self.attachments_with_positions.filter { |obj| obj[:attachment].is_a?(Instruct::Gen) }
+      deferred_gens.each do |obj|
+        position = obj[:position]
+        case gen
+        when :no_change
+        when :hide
+          string[position] = ''
+        when :expand
+          string[position] = obj[:attachment].to_s
+        when :emoji
+          string[position] =  "💬"
         end
-        current_range += char
       end
-      result += rainbowize_string(current_range, last_attrs) unless current_range.empty?
+      string
+    end
+
+    # When a generated result is added to or concatted to a transcript, the
+    # transcript replaces its contents with modified transcript if
+    # the original transcript is the same as the transcript. This enables
+    # middleware to make modifications to the transcript that persist
+    # only when the result is added to the transcript. In all other cases,
+    # the transcript is not modified and the result is the normal result.
+    class Completion < AttributedString
+      attr_reader :prompt
+      def initialize(duped_transcript)
+        super()
+        @prompt = duped_transcript
+      end
+
+      def apply_to_transcript(transcript)
+        deferred_gens = transcript.attachments_with_positions.filter { |obj| obj[:attachment].is_a?(Instruct::Gen) }
+        first_gen = deferred_gens.first
+        return transcript.+(self, apply_completions: false) if first_gen.nil?
+        # if the transcript matches the prompt, we replace the transcript with the updated transcript
+        # otherwise we just append the updated transcript to the transcript
+        # in both cases we remove the gen attachment
+        if transcript == prompt
+          transcript[..first_gen[:position]] = @updated_transcript.+(self, apply_completions: false)
+        else
+          transcript[first_gen[:position]] = self
+        end
+        transcript
+      end
+
+      def +(other)
+        return super unless other.is_a?(Transcript)
+        Transcript.new + self + other
+      end
+
+
+      private
+
+      def first_gen(transcript)
+        return nil if deferred_gens.empty?
+        deferred_gens
+      end
+
+      def updated_transcript=(duped_transcript)
+        @updated_transcript = duped_transcript
+      end
+
     end
 
     private
 
-    def rainbowize_string(string, attrs)
-      result = Rainbow(string)
-      result = result.bg(:green) if attrs[:source] == :llm
-      if attrs[:safe] == false
-        result = attrs[:source] == :llm ? result.color(:pink) : result.color(:red)
-      end
-      result = result.bg(:red) if (attrs[:hide] || []) - (attrs[:unhide] || []) != []
-      result
-    end
-
-    def initialize_dup(attr_string, middleware_storage)
-      @middleware_storage = {}
-      middleware_storage.each do |key, value|
-        @middleware_storage[key] = value.dup
-      end
-      @attr_string = attr_string.dup
-      self
-    end
 
   end
 end

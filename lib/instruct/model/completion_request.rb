@@ -1,9 +1,9 @@
 module Instruct::Model
   class CompletionRequest
-    def initialize(transcript, **kwargs)
+    def initialize(transcript, completion, **kwargs)
       @env = kwargs.reject { |k, v| [:arr_name , :name].include?(k) }
       @transcript = transcript
-      @unmodified_transcript = transcript.dup
+      @completion = completion
       @prompt_transformers = []
       @stream_handlers = []
     end
@@ -27,6 +27,10 @@ module Instruct::Model
 
     def transcript
       @transcript
+    end
+
+    def response_kwargs
+      { completion: @completion, stream_handlers: stream_handlers }
     end
 
     def prompt_object
@@ -58,6 +62,8 @@ module Instruct::Model
     def stream_handlers
       @stream_handlers.reverse
     end
+
+
 
 
   end

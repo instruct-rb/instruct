@@ -4,6 +4,7 @@ require 'ostruct'
 
 # dependencies
 require 'attributed-string'
+# require 'async/http/faraday'
 
 
 
@@ -13,13 +14,15 @@ require_relative "instruct/utils/attributed_string"
 require_relative "instruct/utils/symbolize_keys"
 
 # modules
+require_relative "instruct/refinements"
+
+require_relative "instruct/compile_erb"
+require_relative "instruct/gen"
 require_relative "instruct/utils/transcript_string"
 require_relative "instruct/env"
 require_relative "instruct/error"
 require_relative "instruct/expression"
-require_relative "instruct/erb_future"
 require_relative "instruct/lm/variables"
-require_relative "instruct/lm/erb_context"
 require_relative "instruct/lm"
 require_relative "instruct/model"
 require_relative "instruct/model/completion_response"
@@ -29,7 +32,8 @@ require_relative "instruct/model/chomp_middleware"
 require_relative "instruct/transcript"
 require_relative "instruct/version"
 
-require_relative "instruct/refinements"
+require_relative "instruct/gen_helper"
+require_relative "instruct/helpers"
 
 # optional dependencies
 begin

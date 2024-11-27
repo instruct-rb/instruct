@@ -35,9 +35,6 @@ NTS: How can different middlewares add their own stream handlers with potentiall
   end
   ```
 
-
-
-
 # How you use it
 
 Assuming you have configured your API key the most basic usage follows
@@ -49,63 +46,64 @@ Assuming you have configured your API key the most basic usage follows
 
 # With Helpers
 
-To use the helpers you need to include the InstructHelpers module in your class or module.
+To use the DSL helpers you need to include the helpers and refinements
 ```ruby
-  include InstructHelpers  # refines String behavior and adds the gen and erb methods
+  include Instruct::Helpers # adds the gen and erb methods
+  using Instruct::Refinements # refines String behavior
 ```
-
-
 
 Break down of how basic llm and transcripts fit together
 ``` ruby
-  "The capital of France is" << gen(stop: '\n','.')
+  Instruct::Transcript.new("The capital of France is") << gen(stop: '\n','.')
   # => "The capital of France is Paris"
 
-  prompt =  "The capital of France is" + gen(stop: '\n','.')
-  # "The capital of France is [LLM Gen]"
+  prompt = "The capital of France is" + gen(stop: '\n','.')
+  # => "The capital of France is 💬"
+
+  prompt.class
+  # => Instruct::Transcript
 
   result = prompt.call
-  # => "Paris" (GenStringResult < String) * Start by making this the same class as Transcript
-  # This is the same as result = "" << prompt, it should be noted that << returns itself and not the result of the call
+  # => "Paris"
+
+  result.class
+  # => Instruct::Transcript::Completion
 
   result.prompt
-  # => "The capital of France is [LLM Gen]"
+  # => "The capital of France is 💬"
 
   result.prompt == prompt
-  # true
+  # => true
 
-  together = prompt + result # NTS: (maybe only possible if result.prompt == prompt? but also maybe it just works)
+  together = prompt + result
   # => "The capital of France is Paris"
 
-  together.last_gen == result
-  # true
+  together.class
+  # => Instruct::Transcript
 
   together.call # does nothing as there are no deferred calls
-  # nil
+  # => nil
 
   prompt = "The capital of Germany is" + gen(stop: '\n','.') + ", which is in the region of " + gen(stop: '\n','.')
-  # => "The capital of Germany is [LLM Gen], which is in the region of [LLM Gen]"
+  # => "The capital of Germany is 💬, which is in the region of 💬"
 
   result = prompt.call
-  # => [ "Berlin", "Europe" ] (Array (of GenStringResults))
-#  NTS: when a prompt and result are added if its an array it just pops it on to the prompt bits
+  # => [ "Berlin", "Europe" ] # Array<Instruct::Transcript::Completion>
 
-  together = prompt + result # TODO: what should result + prompt do or result + result?
+  together = prompt + result
   # => "The capital of Germany is Berlin, which is in the region of Europe"
 
 ```
-NTS: model and ts are the same class, its just whether << is used or not
-NTS: quite possibly result is the same class or subclass aswell
-NTS: call just loops through the defferred lm calls
+NTS: [ ] what should result + prompt do or result + result?
+NTS: model and ts might be the same class, its just whether << is used or not
+~~NTS: quite possibly result is the same class or subclass aswell~~
+[x] NTS: call just loops through the defferred lm calls
 NTS: model is selected in this order passed into gen, passed into call, explicity_set, last_used, default
 
 Alternate call method, this is not deferred.
 ```ruby
-ts = "The capital of france is "
-
-# this is the actually the same, under the hood ts.call just iterates through any deferred gen calls that have
-# been added to the transcript and calls them with the current transcript as the prompt
-result = gen(ts, stop: '\n')
+ts = "The capital of France is "
+result = gen(ts, stop_chars: "\n .")
 # => "Paris"
 
 together = ts + result
@@ -160,17 +158,6 @@ using an ERB block.
 
 ### ERB Blocks
 
-Using ERB blocks we can generate complex transcripts that are self referential
-```ruby
-  ts = erb{"The capital of #{"france"} is <%= gen.capture(:capital) %>. <%= transcript.captured(:capital) %> is a <% gen.capture(:descriptor) %> city."}
-  # "The capital of france is <%= gen.capture(:captial) %>. <%= captured(:capital) %> is a <% gen.capture(:descriptor) %> city."
-
-  ts.call
-  # [ "Paris", "beautiful" ]
-```
-What's unique about this is that the ERB block is evaluated both in the context of the current transcript
-and the context of the block that it's in.
-
 ERB blocks are useful for longer prompts and most editors will provide syntax highlighting for the following:
 ```ruby
   ts = erb{<<~ERB.chomp
@@ -183,7 +170,7 @@ ERB blocks are useful for longer prompts and most editors will provide syntax hi
     ERB
   }
 ```
-ERB blocks are also safe by default, with all interpolated content marked as unsafe unless it's explicitly marked as safe.
+ERB blocks are safe by default, with all interpolated content marked as unsafe unless it's explicitly marked as safe.
 
 Along with middleware skipping unsafe content for control words, guard
 Middleware can be used to evaluate the safety of content marked as unsafe. This
