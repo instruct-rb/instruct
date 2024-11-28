@@ -35,6 +35,9 @@ NTS: How can different middlewares add their own stream handlers with potentiall
   end
   ```
 
+
+
+
 # How you use it
 
 Assuming you have configured your API key the most basic usage follows
@@ -170,7 +173,20 @@ ERB blocks are useful for longer prompts and most editors will provide syntax hi
     ERB
   }
 ```
-ERB blocks are safe by default, with all interpolated content marked as unsafe unless it's explicitly marked as safe.
+ERB blocks are also safe by default, with all interpolated content marked as unsafe unless it's explicitly marked as safe.
+
+NTS: THIS IS NOW NOT WORKING, but it could be made to work with a capture attachment that gets put into the string
+    Using ERB blocks we can generate complex transcripts that are self referential
+    ```ruby
+      ts = erb{"The capital of #{"france"} is <%= gen.capture(:capital) %>. <%= transcript.captured(:capital) %> is a <% gen.capture(:descriptor) %> city."}
+      # "The capital of france is <%= gen.capture(:captial) %>. <%= captured(:capital) %> is a <% gen.capture(:descriptor) %> city."
+
+      ts.call
+      # [ "Paris", "beautiful" ]
+    ```
+    What's unique about this is that the ERB block is evaluated both in the context of the current transcript
+    and the context of the block that it's in.
+
 
 Along with middleware skipping unsafe content for control words, guard
 Middleware can be used to evaluate the safety of content marked as unsafe. This

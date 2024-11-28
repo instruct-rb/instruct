@@ -26,7 +26,7 @@ module Instruct
      transcript = transcript_without_gen_attachment
      request = Model::CompletionRequest.new(transcript, completion, **kwargs)
      request.add_stream_handler do |response|
-       yield(transcript + response) if block_given?
+       yield(request.transcript + response) if block_given?
      end
      response = request.execute(@model)
      completion_string = response.attributed_string

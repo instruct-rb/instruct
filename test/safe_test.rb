@@ -39,5 +39,14 @@ class Test < Minitest::Test
     assert_safe_match expected, prompt
   end
 
+  def test_llm_is_unsafe
+    @mock.expect_completion("The capital of France is ", "Paris.")
+    prompt = "The capital of France is ".prompt_safe + gen()
+    result = prompt.call
+    unsafe_paris = AttributedString.new("Paris.", safe: false)
+    assert_safe_match unsafe_paris, result
+    assert_safe_match ("The capital of France is ".prompt_safe + unsafe_paris), (prompt + result)
+  end
+
 
 end

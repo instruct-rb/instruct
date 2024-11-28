@@ -9,14 +9,13 @@
 - [ ] Roles for chat completion
   - [ ] Create a role system
   - [x] Work out an escaping system for user content
-- [ ] Add deferred to lm
+- [ ] Capture should be deferred
   - Why?
-    - That way a function doesn't have to have an lm passed in
-    - Ideas?
-      - can we return a normal result from the function? or does it have to be an lm?
-    - This could just return a SumExpression
+    - That way it could sit in the erb system and look at result of previous llm calls on the same prompt
+    - That way function calls for CFGs could be created
 - [x] Transcript
   - [x] Make it an object
+  - [ ] Consider stopping the safe being modified with attrs or by appending attributed strings
   - [ ] Calculate forked paths
   - [ ] Store failed constraints
   - [ ] Store details of LLM call
@@ -80,8 +79,7 @@
 - [ ] add a way so that if a middleware runs another request and completion we can
   store that but without breaking the transcript. (perhaps we provide the current lm)
   and the middleware can call lm.gen(req) and return the response.
-- [x] add safe to #f() so that it can be set to override the default
-  - [ ] write a test for this
+- [x] add safe to #() so that it can be set to override the default: ALTERNATE FOUND
 
 # Chomp Middleware
 - [ ] If the middleware hid some whitespace, and then the LLM adds it, perhaps we should

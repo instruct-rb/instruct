@@ -10,9 +10,9 @@ class ReadmeTest < Minitest::Test
   end
 
   def test_perform_alternative_call
-    # @mock.expect_completion("The capital of France is ", "Paris.")
-    # assert_equal "Paris.", gen("The capital of France is ")
-    # @mock.verify
+    @mock.expect_completion("The capital of France is ", "Paris.")
+    assert_equal "Paris.", gen("The capital of France is ")
+    @mock.verify
 
     @mock.expect_completion("The capital of France is ", "Paris.")
     ts = "The capital of France is "
@@ -83,15 +83,5 @@ class ReadmeTest < Minitest::Test
     assert_equal "The capital of France is Paris.", result.to_s
     @mock.verify
   end
-
-  # def erb_safe_test
-  #   ts = erb{"The capital of #{"france"} is <%= gen.capture(:capital) %>. <%= transcript.captured(:capital) %> is a <% gen.capture(:descriptor) %> city."}
-  #   "The capital of france is <%= gen.capture(:captial) %>. <%= captured(:capital) %> is a <% gen.capture(:descriptor) %> city."
-
-  #   ts.call
-  #   # [ "Paris", "beautiful" ]
-  # end
-
-
 
 end

@@ -5,7 +5,7 @@ module Instruct
       # private :old_double_arrow
       def <<(other)
         if other.is_a?(Transcript) || other.is_a?(Transcript::Completion)
-        raise StandardError, <<~ERR.chomp
+        raise Instruct::Error, <<~ERR.chomp
           Consider using become gem here to make string become a transcript, if you see this error you should
           convert your string to an Instruct::Transcript either using Instruct::Transcript.new or "safe string".prompt_safe
           ERR

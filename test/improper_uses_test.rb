@@ -10,7 +10,7 @@ class ImproperUsesTest < Minitest::Test
 
   def test_add_results
     @mock.expect_completion("The capital of France is ", "Paris.")
-    result = gen("The capital of France is")
+    result = gen("The capital of France is ")
     sum = result + result
     assert_equal Instruct::Transcript::Completion, sum.class
     assert_equal "Paris.Paris.", sum.to_s

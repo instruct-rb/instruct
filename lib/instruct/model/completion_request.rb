@@ -2,7 +2,7 @@ module Instruct::Model
   class CompletionRequest
     def initialize(transcript, completion, **kwargs)
       @env = kwargs.reject { |k, v| [:arr_name , :name].include?(k) }
-      @transcript = transcript
+      @transcript = transcript.dup
       @completion = completion
       @prompt_transformers = []
       @stream_handlers = []
