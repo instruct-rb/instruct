@@ -1,3 +1,41 @@
+The instruct aims to make working directly with LLMs via prompt and responses seamless
+and interwoven with code, the plans to build an ecosystem
+of tools on top of it.
+
+It's goal is to provide a great DX for working with LLMs in Ruby from development to production,
+simple prompts to automated prompt optimization, free form output to structured output.
+
+Big ideas....
+See instruct-eval for a framework for evaluating prompts and collecting samples
+See instruct-web for a web interface for developing prompts with evals
+See instruct-spygrad gem for automatic prompt optimization (dspy and textgrad inspired)
+See instruct-structured-output for structured output (instruct-spy depends on this) (baml inspired)
+See instruct-guard for guardrails to stop prompt injections
+
+# Stream Object Handling
+NTS: How can different middlewares add their own stream handlers with potentially different output objects:
+ i.e. stream.to_chat, stream.last_chunk, stream.response, stream.structured_output
+ maybe it's just like an .env in the stream response object and if the middleware has a method with the same
+ name it'll be called?
+
+ TODO: think about function calling, how do we handle it? Probably tools are passed into gen()
+ but they can also be attached to the transcript. Similar to how model is selected.
+
+ Possibly you can define tools at a class level by just adding them to the class
+ ```ruby
+  class X
+    define_tool :name, :function # this will be on every gen call for this class
+
+    # this will be on all future gen calls for this transcript, unless the tool attachment is removed
+    ts += tool(:function_name)
+
+    gen(tools, tools_erb:,)
+  end
+  ```
+
+
+
+
 # Todos
 
 - [ ] Figure out model middleware vs user added middleware
@@ -20,6 +58,7 @@
   - [ ] Store failed constraints
   - [ ] Store details of LLM call
 - [x] Streaming responses
+  - [ ] Stream object handler (like prompt object but the other way)
   - [ ] Client side stops
     - I think throw catch is the best way as that should close the request
     - see example https://github.com/alexrudall/ruby-openai/issues/265
@@ -79,7 +118,9 @@
 - [ ] add a way so that if a middleware runs another request and completion we can
   store that but without breaking the transcript. (perhaps we provide the current lm)
   and the middleware can call lm.gen(req) and return the response.
-- [ ] Allow middleware to define upstream and downstream dependencies or invalidations
+- [ ] Add a way for middleware to be passed to the call or gen method
+  - [ ]  Middleware should be able to figure out their correct order
+    - [ ] Allow middleware to define upstream and downstream candidates (nil is directly on the model or directly on the transcript)
 - [x] add safe to #() so that it can be set to override the default: ALTERNATE FOUND
 
 # Chomp Middleware

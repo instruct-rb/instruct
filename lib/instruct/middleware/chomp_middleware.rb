@@ -13,6 +13,7 @@ module Instruct
     def call(req, _next:)
 
       whitespace = ''
+      # TODO, this should only be for non-hidden whitespace
       req.transcript.to_s.match(/(\s+)$/) do |match|
         whitespace = match[0]
       end
