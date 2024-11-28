@@ -1,7 +1,7 @@
 module Instruct
   class Transcript < AttributedString
 
-    def call(**kwargs)
+    def call(**kwargs, &streaming_block)
       raise ArgumentError, "cannot add transcript to call on transcript" if kwargs[:transcript]
 
       prompt = Transcript.new
@@ -12,7 +12,7 @@ module Instruct
       gens.each_with_index do |gen, i|
         prompt += substrings[i]
         gen.transcript = prompt
-        completion = gen.call(**kwargs)
+        completion = gen.call(**kwargs, &streaming_block)
         prompt += completion
         results << completion
       end
@@ -77,6 +77,30 @@ module Instruct
       return [gens, substrings]
     end
 
+    def hide_range_from_prompt(range, by:)
+      add_attrs(range, "hidden_#{by}": true)
+    end
+
+    def unhide_range_from_prompt(range, by:)
+      remove_attrs(range, "hidden_#{by}".to_sym)
+    end
+
+    def prompt_object
+      prompt_object = self.dup
+      hidden_chars = prompt_object.filter do |attrs|
+        len_hidden_attrs(attrs).positive?
+      end
+      return prompt_object if hidden_chars.empty?
+      ranges = hidden_chars.original_ranges_for(0..hidden_chars.length - 1)
+      ranges.each do |range|
+        prompt_object[range] = ''
+      end
+      prompt_object
+    end
+
+    def len_hidden_attrs(attrs)
+      attrs.keys.filter { |key| key.to_s.start_with?('hidden_') }.length
+    end
 
 
     def to_s(gen: :emoji)

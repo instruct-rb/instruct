@@ -1,4 +1,4 @@
-class MockCompletionStreamResponse < Instruct::Model::CompletionResponse
+class MockCompletionStreamResponse < Instruct::Gen::CompletionResponse
 
   def self.text_chunk(text_chunk, finish_reason: nil)
     return { text_chunk: text_chunk, finish_reason: self.finish_reason(finish_reason) } if finish_reason
@@ -40,11 +40,11 @@ class MockCompletionStreamResponse < Instruct::Model::CompletionResponse
     while @pos < @stream_chunks.length
       chunk = @stream_chunks[@pos]
       append_text_chunk(chunk[:text_chunk]) if chunk[:text_chunk]
+      chunk_processed
       if chunk[:finish_reason]
         done chunk[:finish_reason]
         break
       end
-      chunk_processed
       @pos += 1
     end
   end

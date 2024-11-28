@@ -79,6 +79,7 @@
 - [ ] add a way so that if a middleware runs another request and completion we can
   store that but without breaking the transcript. (perhaps we provide the current lm)
   and the middleware can call lm.gen(req) and return the response.
+- [ ] Allow middleware to define upstream and downstream dependencies or invalidations
 - [x] add safe to #() so that it can be set to override the default: ALTERNATE FOUND
 
 # Chomp Middleware

@@ -1,8 +1,8 @@
-  require_relative 'test_helper'
+  require_relative '../test_helper'
 
   class VarTest < Minitest::Test
     # def test_a_list_of_2_animals
-    #   mock = MockCompletionModel.new(middlewares: [Instruct::Model::ChompMiddleware])
+    #   mock = MockCompletionModel.new(middlewares: [Instruct::ChompMiddleware])
     #   mock.expect_completion("Please think of 2 different animals on separate lines.\nAnimal 1:", "Zebra", stop: "\n")
     #   mock.expect_completion("Please think of 2 different animals on separate lines.\nAnimal 1: Zebra\nAnimal 2:", "Lion", stop: "\n")
     #   lm = Instruct::LM.new(completion_model: mock)

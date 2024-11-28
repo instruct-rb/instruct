@@ -19,7 +19,6 @@ module Instruct
       # then a colon, then an optional single space which is chomped.
       role_change_re = /(?:^|\n)\s*(\w+):\s?/
       control_str.scan(role_change_re) do |match|
-        range_of_role = Regexp.last_match.offset(1)
         range_of_full_match = Regexp.last_match.offset(0)
 
         ranges = control_str.original_ranges_for(range_of_full_match[0]..range_of_full_match[1] - 1)
@@ -48,7 +47,7 @@ module Instruct
       end
 
       if req.transcript.attrs_at(req.transcript.length - 1)[:role] != :assistant && @roles.include?(:assistant)
-        req.transcript.safe_concat("\nassistant: ")
+        req.transcript.safe_concat(Transcript.new("\nassistant: ", source: :chat_completion_middleware))
       end
 
       # need to work out pos of each entry in text transcript
@@ -71,7 +70,7 @@ module Instruct
         message_range = message_range.first..idx
       end
       messages << { role => prompt_str[message_range].remove_attrs(:role) } unless message_range.size.zero? || role.nil?
-      messages
+      { messages: messages }
     end
 
 

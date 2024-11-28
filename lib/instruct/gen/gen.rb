@@ -24,9 +24,12 @@ module Instruct
      kwargs = @kwargs.merge(kwargs)
      completion = Transcript::Completion.new(@transcript.dup, **kwargs)
      transcript = transcript_without_gen_attachment
-     request = Model::CompletionRequest.new(transcript, completion, **kwargs)
-     request.add_stream_handler do |response|
-       yield(request.transcript + response) if block_given?
+     request = Gen::CompletionRequest.new(transcript, completion, **kwargs)
+     if streaming_block
+      request.add_stream_handler do |response|
+        set_updated_transcript_on_completion(response, request.transcript)
+        streaming_block.call(response)
+      end
      end
      response = request.execute(@model)
      completion_string = response.attributed_string

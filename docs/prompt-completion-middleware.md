@@ -11,7 +11,7 @@ language model for completion. This is helpful for various tasks like adding
 context, filtering out unwanted details, transforming the format, supporting new
 model features, and more.
 
-When a {Instruct::Model::CompletionRequest completion request} is made, the
+When a {Instruct::Gen::CompletionRequest completion request} is made, the
 current {Instruct::Transcript transcript} is used as the prompt. The middleware
 stack then transforms and modifies the {Instruct::Transcript transcript},
 preparing it for the completion call. This setup allows for middleware such as
@@ -25,7 +25,7 @@ retry logic, logging, or other enhancements you might imagine.
 
 Any object that responds to `#call(req, _next:)` can be used as
 middleware. It's expected that on the happy path each bit of middleware calls
-`#call(req)` on `_next:` to continue the chain. The request will be an {Instruct::Model::CompletionRequest} object.
+`#call(req)` on `_next:` to continue the chain. The request will be an {Instruct::Gen::CompletionRequest} object.
 
 If the middleware is added a class it will be instantiated with the `new`
 method, unless the class itself responds to `#call`. This is useful if you
@@ -34,7 +34,7 @@ want fresh state for everytime `#call` is called.
 The middleware chain runs in the order that it is added to the {Instruct::LM lm}. The last
 item in the chain is usually the model itself.
 
-The returned response must be an {Instruct::Model::CompletionResponse} object.
+The returned response must be an {Instruct::Gen::CompletionResponse} object.
 which will be added to the transcript.
 
 The middleware can used to modify the transcript, however, these modifications

@@ -37,7 +37,7 @@ class MockCompletionModel
     end
 
     response = @expected_calls[@position][:response]
-    if response.is_a?(String)
+    if response.is_a?(String) || response.is_a?(Array)
       response = MockCompletionStreamResponse.new(response, finish_reason: @expected_calls[@position][:finish_reason], **req.response_kwargs)
     elsif response.is_a?(MockCompletionStreamResponse)
     else

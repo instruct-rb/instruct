@@ -1,4 +1,4 @@
-module Instruct::Model
+class Instruct::Gen
   # Abstract class for completion responses
   class CompletionResponse
 
@@ -27,10 +27,12 @@ module Instruct::Model
     end
 
     def chunk_processed
-      ts = response_buffer.dup
+      ts = response_buffer
       @stream_handlers.each do |handler|
-        handler.call(ts, @chunks)
+         ts = handler.call(ts, @chunks)
+         break if ts == false
       end
+      @response_buffer = ts if ts.is_a? Instruct::Transcript::Completion
       @chunks += 1
     end
 

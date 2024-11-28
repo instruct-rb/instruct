@@ -66,7 +66,9 @@ Break down of how basic llm and transcripts fit together
   prompt.class
   # => Instruct::Transcript
 
-  result = prompt.call
+  result = prompt.call do |response|
+    # response => streamed response ["P", "Par", "Paris]
+  end
   # => "Paris"
 
   result.class

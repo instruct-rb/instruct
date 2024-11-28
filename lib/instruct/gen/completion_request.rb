@@ -1,4 +1,4 @@
-module Instruct::Model
+class Instruct::Gen
   class CompletionRequest
     def initialize(transcript, completion, **kwargs)
       @env = kwargs.reject { |k, v| [:arr_name , :name].include?(k) }
@@ -34,7 +34,7 @@ module Instruct::Model
     end
 
     def prompt_object
-      prompt_object = @transcript.dup
+      prompt_object = @transcript.prompt_object
       @prompt_transformers.each do |transformer|
         prompt_object = transformer.call(prompt_object)
       end
