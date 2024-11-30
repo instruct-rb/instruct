@@ -1,6 +1,6 @@
 require_relative 'test_helper'
 
-class ReadmeTest < Minitest::Test
+class LLMCompletionsTest < Minitest::Test
   include Instruct::Helpers
   using Instruct::Refinements
 
@@ -68,7 +68,7 @@ class ReadmeTest < Minitest::Test
     assert_equal "The capital of France is Paris. This is in the region of Europe.", together.to_s
 
     @mock.expect_completion("The capital of France is ", "Paris Oui Oui")
-    @mock.expect_completion("The capital of France is Paris. This is in the region of ", "Europe Oui Oui")
+    @mock.expect_completion("The capital of France is Paris Oui Oui. This is in the region of ", "Europe Oui Oui")
     prompt << prompt.call
     assert_equal "The capital of France is Paris Oui Oui. This is in the region of Europe Oui Oui.", prompt.to_s
     @mock.verify
@@ -82,6 +82,31 @@ class ReadmeTest < Minitest::Test
     result = Instruct::Transcript.new("The capital of France is ") << gen()
     assert_equal "The capital of France is Paris.", result.to_s
     @mock.verify
+  end
+
+  def test_conversation_example
+    @mock.expect_completion(nil, "hello")
+    7.times do |i|
+      @mock.expect_completion(nil, "p#{i}")
+      @mock.expect_completion(nil, "i#{i}")
+    end
+    @mock.expect_completion(nil, "bye")
+    pop_star = "Noel Gallagher"
+    pop_star = p{"system: You're <%= pop_star %>. You are being interviewed, each message from the user is from an interviewer"}
+    interviewer = p{"system: You're an expert interviewer, each message is from the pop star you're interviewing"}
+    interviewer << p{"user: [<%= pop_star %> sits down in front of you]"} + gen
+
+    7.times do
+      pop_star << p{"user: <%= interviewer.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
+      interviewer << p{"user: <%= pop_star.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
+    end
+
+    interviewer << p{"user: <%= pop_star.captured(:reply) %> I've got to head off now."} + gen.capture(:reply, list: :replies)
+    @mock.verify
+    conversation = pop_star.captured(:replies).zip(interviewer.captured(:replies)).flatten.join("")
+    expected = "p0i0p1i1p2i2p3i3p4i4p5i5p6i6"
+    assert_equal expected, conversation
+
   end
 
 end

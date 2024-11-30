@@ -1,6 +1,6 @@
 module Instruct
   class CompileERB
-    # TODO: consider including these refinements as they might be able to be used within the erb block
+    # TODO: consider including the following refinements as they might be able to be used within the erb block
     # needs tests before including
     #
     # using AttributedString::Refinements

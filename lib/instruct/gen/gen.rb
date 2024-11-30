@@ -7,6 +7,8 @@ module Instruct
      @model = model
      @kwargs = kwargs
      @results = []
+     @capture_key = nil
+     @capture_list_key = nil
    end
 
    def ==(other)
@@ -14,6 +16,11 @@ module Instruct
      # skip looking at transcript and results for now as it makes two prompts not equal with a gen
      # that has run and one that hasn't
      @model == other.model && @kwargs == other.kwargs
+   end
+
+   def capture(key, list: nil)
+     @capture_key, @capture_list_key = key, list
+     self
    end
 
    def completed?
@@ -28,12 +35,14 @@ module Instruct
      if streaming_block
       request.add_stream_handler do |response|
         set_updated_transcript_on_completion(response, request.transcript)
+        set_capture_keys_on_completion(response)
         streaming_block.call(response)
       end
      end
      response = request.execute(@model)
      completion_string = response.attributed_string
      set_updated_transcript_on_completion(completion_string, request.transcript)
+     set_capture_keys_on_completion(completion_string)
      # attr_string.add_arr_attrs()
      # capture_result_in_variable(attr_string, **kwargs)
      @results << completion_string
@@ -50,6 +59,10 @@ module Instruct
 
    def set_updated_transcript_on_completion(completion, transcript)
      completion.send(:updated_transcript=, transcript.dup)
+   end
+
+   def set_capture_keys_on_completion(completion)
+     completion.send(:captured=, @capture_key, @capture_list_key)
    end
 
    def to_s

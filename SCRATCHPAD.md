@@ -33,6 +33,12 @@ NTS: How can different middlewares add their own stream handlers with potentiall
   end
   ```
 
+NTS: [ ] what should result + prompt do or result + result?
+NTS: model and ts might be the same class, its just whether << is used or not
+~~NTS: quite possibly result is the same class or subclass aswell~~
+[x] NTS: call just loops through the defferred lm calls
+NTS: model is selected in this order passed into gen, passed into call, explicity_set, last_used, default
+
 
 
 

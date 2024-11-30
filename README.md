@@ -15,39 +15,39 @@ This makes manipulating steering an LLM through multi-step prompts (especially
 with multiple agenic roles) easier but no less powerful than direct calling.
 
 NTS!!!: Capture still needs to be complete before this can go out
-Example of controlling a multi-step dialogue between an interviewer and a pop star
+Simple example of controlling a multi-step dialogue between an interviewer and a pop star
 ```ruby
   pop_star = "Noel Gallagher"
   pop_star = p{"system: You're <%= pop_star %>. You are being interviewed, each message from the user is from an interviewer"}
   interviewer = p{"system: You're an expert interviewer, each message is from the pop star you're interviewing"}
-  interviewer << p{"user: [<%= pop_star %> sits down in front of you]"} + gen.capture()
+  interviewer << p{"user: [<%= pop_star %> sits down in front of you]"} + gen
 
   7.times do
-    pop_star = << p{"user: <%= interviewer[:reply] %>"} + gen.capture(:reply, list: :replies)
-    interviewer << p{"user: <%= pop_star[:reply] %>"} + gen.capture(:reply, list: :replies)
+    pop_star << p{"user: <%= interviewer.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
+    interviewer << p{"user: <%= pop_star.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
   end
 
   interviewer << p{"user: <%= pop_star[:reply]. I've got to head off now. %>"} + gen.capture(:reply, list: :replies)
-  pop_star = pop_star[:replies].zip(interviewer[:replies].flatten.join("\n\n")
+  conversation = pop_star.captured(:replies).zip(interviewer.captured(:replies)).flatten.join("\n\n")
 ```
 
-The ERB prompt support (shown above) allows for dynamic prompt templating with
-automatic handling of safe and unsafe content similar to HTML templating. This
-mechanism provides a way for both programmer and middleware to tell the
-difference between user or LLM generated content and prompt templates. An
-example use of this could be guard middleware, which transparently checks unsafe
-content for prompt injections or inappropriate content. Or in the case of the
-chat role middleware, it doesn't enable role switches on unsafe content, but it
-does on safe content.
+The ERB prompt support `#p{}` (shown above) allows for dynamic prompt templating
+with automatic handling of safe and unsafe content similar to HTML templating.
 
-The flexible middleware system can be used to add features like structured
-output, conversation pruning, RAG integrations, retries, auto-continuation,
-guard-rails and more, all while providing a common way for accessing different
-LLMs with different capabilities. In fact, support for the typical role based
-chat LLM calls is handled by the chat completion middleware.
+This mechanism provides a way for both programmer and middleware to tell the
+difference between user, LLM, and prompt template text. This information could
+be used by guard middleware to transparently checks unsafe content for prompt
+injections or inappropriate content. Or in the case of the chat role middleware
+used above, role switches do not occur on unsafe content.
+
+A flexible middleware system can be used to add features like structured output,
+conversation pruning, RAG integrations, retries, auto-continuation, guard-rails
+and more, all while providing a common way for accessing different LLMs with
+different capabilities. In fact, support for the typical role based chat LLM
+calls is handled by the chat completion middleware.
 
 Streaming support is a first class citizen, both middleware and callers can process
-hunks of the responses as they arrive. This can be used to display a transcript in
+chunks of the responses as they arrive. This can be used to display a transcript in
 real time, or to validate the output of an LLM call as it's being generated.
 
 ## What's missing
@@ -81,6 +81,7 @@ ideas.
   - [ ] Improve attributed string API with a visitor style presenter
     - [ ] Update middleware and printers to use the new presenters
   - [ ] Serialization of transcripts (Consider migrations / upgrades) for storage
+  - [ ] `stop_chars` and `stop`
 
 ## Differences from Guidance
 
@@ -93,16 +94,13 @@ transcript, prompts, and the LM all as the same object. Under the hood this is
 implemented as an attributed string which provides a way to add metadata to
 character ranges in the string and add attachments (any object) into the string.
 
-
-
-# How you use it
+# Usage
 
 Assuming you have configured your API key the most basic usage follows
 ```ruby
   gen("The capital of France is", stop_chars: "\n.,")
   # => "Paris"
 ```
-### TODO: this should be a couple of really cool examples
 
 # With Helpers
 
@@ -156,11 +154,6 @@ Break down of how basic llm and transcripts fit together
   # => "The capital of Germany is Berlin, which is in the region of Europe"
 
 ```
-NTS: [ ] what should result + prompt do or result + result?
-NTS: model and ts might be the same class, its just whether << is used or not
-~~NTS: quite possibly result is the same class or subclass aswell~~
-[x] NTS: call just loops through the defferred lm calls
-NTS: model is selected in this order passed into gen, passed into call, explicity_set, last_used, default
 
 Alternate call method, this is not deferred.
 ```ruby
@@ -172,19 +165,19 @@ together = ts + result
 ```
 
 
-
-
-A captured variable
+Captured content can be used to access generated content from the transcript.
 ```ruby
   ts = "The capital of France is " + gen(model: 'gpt-3.5-turbo-instruct', stop: '\n','.').capture(:capital)
   result = ts.call
-  # "The capital of France is Paris"
+  # => "Paris"
 
-  result[:capital] # => "Paris"
+  ts.captured(:capital)
+  # => nil
 
   ts += result
-  ts[:capital] # => "Paris"
+  ts.captured(:capital) # => "Paris"
 ```
+
 NTS: the capture call can add capture middleware to the pipeline
 NTS: consider uing middleware factories so that for example if we force json schema (OpenAI) we don't need to use
 our own streaming contrainst middleware and instead translate it to the OpenAI one

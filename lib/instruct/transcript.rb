@@ -22,15 +22,7 @@ module Instruct
 
 
     def +(other, *args, apply_completions: true)
-      if other.is_a?(Array) && other.all? { |obj| obj.is_a?(Transcript::Completion) } && !other.empty?
-        return self.+(*(other + args), apply_completions: apply_completions)
-      end
-      result = if other.is_a?(Transcript::Completion) && apply_completions
-        other.apply_to_transcript(self.dup)
-      else
-        super(other)
-      end
-      args.empty? ? result : result.+(*args, apply_completions:)
+      self.dup.concat(other, *args, apply_completions:)
     end
 
     # Unlike normal strings << is not the same as concat. << first performs the concat, then runs call on the
@@ -98,10 +90,6 @@ module Instruct
       prompt_object
     end
 
-    def len_hidden_attrs(attrs)
-      attrs.keys.filter { |key| key.to_s.start_with?('hidden_') }.length
-    end
-
 
     def to_s(gen: :emoji)
       string = super()
@@ -121,6 +109,40 @@ module Instruct
       string
     end
 
+    def captured(key)
+      return nil unless @captured
+      @captured[key]
+    end
+
+    def capture(key, **kwargs)
+      # TODO: attributed string should support -1
+      last_attachment = self.attachment_at(self.length - 1)
+      if last_attachment.is_a?(Instruct::Gen)
+        last_attachment.capture(key, **kwargs)
+      else
+       raise ArgumentError, "Cannot capture on a transcript that does not end with a Gen"
+      end
+      self
+    end
+
+    private
+
+    def add_captured(value, key, list_key)
+      @captured ||= {}
+      if key
+        @captured[key] = value
+      end
+      if list_key
+        @captured[list_key] ||= [@captured[list_key]].compact
+        @captured[list_key] << value
+      end
+    end
+
+    def len_hidden_attrs(attrs)
+      attrs.keys.filter { |key| key.to_s.start_with?('hidden_') }.length
+    end
+
+
     # When a generated result is added to or concatted to a transcript, the
     # transcript replaces its contents with modified transcript if
     # the original transcript is the same as the transcript. This enables
@@ -137,11 +159,12 @@ module Instruct
       def apply_to_transcript(transcript)
         deferred_gens = transcript.attachments_with_positions.filter { |obj| obj[:attachment].is_a?(Instruct::Gen) }
         first_gen = deferred_gens.first
-        return transcript.+(self, apply_completions: false) if first_gen.nil?
+        return transcript.replace(transcript.+(self, apply_completions: false)) if first_gen.nil?
         # if the transcript matches the prompt, we replace the transcript with the updated transcript
         # otherwise we just append the updated transcript to the transcript
         # in both cases we remove the gen attachment
         if transcript == prompt
+          transcript.send(:add_captured, self, @key, @list_key)
           transcript[..first_gen[:position]] = @updated_transcript.+(self, apply_completions: false)
         else
           transcript[first_gen[:position]] = self
@@ -164,6 +187,10 @@ module Instruct
 
       def updated_transcript=(duped_transcript)
         @updated_transcript = duped_transcript
+      end
+
+      def captured=(key, list_key)
+        @key, @list_key = key, list_key
       end
 
     end
