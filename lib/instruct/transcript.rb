@@ -151,8 +151,8 @@ module Instruct
     # the transcript is not modified and the result is the normal result.
     class Completion < AttributedString
       attr_reader :prompt
-      def initialize(duped_transcript)
-        super()
+      def initialize(*args, duped_transcript: nil, **kwargs)
+        super(*args, **kwargs)
         @prompt = duped_transcript
       end
 
@@ -175,6 +175,15 @@ module Instruct
       def +(other)
         return super unless other.is_a?(Transcript)
         Transcript.new + self + other
+      end
+
+      # Returns the latest chunk in the completion unless a chunk argument is provided
+      def get_chunk(chunk = self.attrs_at(self.length - 1).fetch(:stream_chunk, nil))
+        filtered = self.filter { |attrs| attrs[:stream_chunk] == chunk }
+        ranges = filtered.original_ranges_for(0..(filtered.length - 1))
+        ranges.map { |range| self[range] }.join
+      rescue StandardError => e
+        binding.irb
       end
 
 

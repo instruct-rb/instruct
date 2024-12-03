@@ -32,7 +32,7 @@ module Instruct
      model = Instruct::Model.from_string(model) if model.class == String
      model ||= @model
 
-     completion = Transcript::Completion.new(@transcript.dup)
+     completion = Transcript::Completion.new(duped_transcript: @transcript.dup)
      transcript = transcript_without_gen_attachment
      request = Gen::CompletionRequest.new(transcript, completion, **kwargs)
      if streaming_block
