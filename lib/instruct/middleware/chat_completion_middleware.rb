@@ -22,8 +22,9 @@ module Instruct
         range_of_full_match = Regexp.last_match.offset(0)
 
         ranges = control_str.original_ranges_for(range_of_full_match[0]..range_of_full_match[1] - 1)
-        start = control_str.original_position_at(ranges.first.first)
-        finish = control_str.original_position_at(ranges.last.last)
+        start = ranges.first.first
+        finish = ranges.last.last
+
 
         role = match[0].to_sym
         if @roles.include?(role)
