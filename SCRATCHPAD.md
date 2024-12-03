@@ -82,6 +82,10 @@ Middleware can be used to evaluate the safety of content marked as unsafe. This
 might often be implemented as an API call or an llm call to another faster model
 fine tuned to search for prompt injections.
 
+NTS: This syntax is a bit gross, maybe we can get rid of the new line requirement?
+```interviewer << p{"\nuser: __Noel sits down in front of you.__"} + gen.capture(:reply)```
+
+
 
 ```encoding / decoding transcript```
 The transcript can be encoded and decoded and to store it in a database
