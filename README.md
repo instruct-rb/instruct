@@ -212,22 +212,22 @@ interactions between two different agents.
 
   # We start a dynamic Q&A loop with the interviewer by kicking off the
   # interviewing agent and capturing the response under the :reply key.
-  interviewer << p{"user: __Noel sits down in front of you.__"} + gen.capture(:reply)
+  interviewer << p{"\nuser: __Noel sits down in front of you.__"} + gen.capture(:reply)
 
   puts interviewer.captured(:reply) # => "Hello Noel, how are you today?"
 
   5.times do
     # Noel is sent the last value captured in the interviewer's transcript under the :reply key.
     # Similarly, we generate a response for Noel and capture it under the :reply key.
-    noel << p{"user: <%= interviewer.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
+    noel << p{"\nuser: <%= interviewer.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
 
     # Noel's captured reply is now sent to the interviewer, who captures it in the same way.
-    interviewer << p{"user: <%=  noel.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
+    interviewer << p{"\nuser: <%=  noel.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
   end
 
   # After the conversation, we can access the list captured replies from both agents
-  noel_said = noel.captured(:replies).map{ |r| "noel: #{r} }
-  interviewer_said = interviewer.captured(:replies).map{ |r| "interviewer: #{r} }
+  noel_said = noel.captured(:replies).map{ |r| "noel: #{r}" }
+  interviewer_said = interviewer.captured(:replies).map{ |r| "interviewer: #{r}" }
 
   puts interviwer_said.zip(noel_said).flatten.join("\n\n")
   # => "noel: ... \n\n interviewer: ..., ..."
