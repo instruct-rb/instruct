@@ -1,5 +1,5 @@
 module Instruct::OpenAI
-  class ArgsMiddleware
+  class Middleware
     def call(req, _next:)
       raise Instruct::Todo, "Non text modalities not supported yet, consider opening a pull request" if req.env[:modalities] && (req.env[:modalities] != [:text] || req.env[:modalities] != ["text"])
       raise Instruct::Todo, "Tools are not supported yet, consider opening a pull request" if req.env[:tools] || req.env[:tool_choice] || req.env[:parallel_tool_calls] || req.env[:function_call] || req.env[:functions]
@@ -25,9 +25,22 @@ module Instruct::OpenAI
         end
       end
 
+      req.add_prompt_transform do | attr_str |
+        transform(attr_str)
+      end
+
       _next.call(req)
 
 
+    end
+
+    def transform(prompt_obj)
+      if prompt_obj.is_a?(Hash) && prompt_obj[:messages].is_a?(Array)
+        prompt_obj[:messages].map! do |message|
+          { role: message.keys.first, content: message.values.first.to_s }
+        end
+      end
+      prompt_obj
     end
 
   end

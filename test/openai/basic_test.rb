@@ -19,4 +19,10 @@ class OpenAIBasicTest < Minitest::Test
     response = prompt.call(temperature: 0, stop_chars: "\n. ")
     assert_equal "Paris", response.to_s
   end
+
+  def test_chat_completion_api_works
+    prompt = "system: you're an alphabet bot\nuser: ab\nassistant: c\n" + gen
+    response = prompt.call(temperature: 0, stop_chars: "\n. ", model: 'gpt-3.5-turbo')
+    assert_equal "d", response.to_s
+  end
 end
