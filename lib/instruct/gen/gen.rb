@@ -27,8 +27,11 @@ module Instruct
      @results.any?
    end
 
-   def call(**kwargs, &streaming_block)
+   def call(model: nil, **kwargs, &streaming_block)
      kwargs = @kwargs.merge(kwargs)
+     model = Instruct::Model.from_string(model) if model.class == String
+     model ||= @model
+
      completion = Transcript::Completion.new(@transcript.dup)
      transcript = transcript_without_gen_attachment
      request = Gen::CompletionRequest.new(transcript, completion, **kwargs)
@@ -39,7 +42,7 @@ module Instruct
         streaming_block.call(response)
       end
      end
-     response = request.execute(@model)
+     response = request.execute(model)
      completion_string = response.attributed_string
      set_updated_transcript_on_completion(completion_string, request.transcript)
      set_capture_keys_on_completion(completion_string)
