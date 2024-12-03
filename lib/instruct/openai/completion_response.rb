@@ -1,8 +1,10 @@
-module Instruct
-  class OpenAICompletionResponse < Gen::CompletionResponse
+module Instruct::OpenAI
+  # The completion API has been deprecated from OpenAI but some alternative service providers
+  # may still be using it. Leaving it in for now.
+  class CompletionResponse < Instruct::Gen::CompletionResponse
 
     def call(chunk)
-      case SymbolizeKeys.recursive(chunk)
+      case Instruct::SymbolizeKeys.recursive(chunk)
       in { choices: [ { text: new_content, finish_reason: } ] }
         append_text_chunk(new_content)
         done(finish_reason) unless finish_reason.nil?

@@ -301,6 +301,7 @@ ideas.
 
 - Middleware
   - [ ] Constraint based validation with automatic retries
+  - [ ] New Conversation middleware with default to user with system kw arg or assistant kw arg (maybe its one and the same?)
   - [ ] Conversation management (prune long running conversations)
   - [ ] Async support (waiting on async support in ruby-openai). This enables
         the use of async calls to the LLM and the use of async middleware.

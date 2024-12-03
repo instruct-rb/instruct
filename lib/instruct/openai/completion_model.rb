@@ -1,5 +1,5 @@
-module Instruct
-  class OpenAICompletionModel
+module Instruct::OpenAI
+  class CompletionModel
     # we'll do things like ehis to generalize methods neded by middleware for automatic continue
     # json self healing, etc
     #def is_stop_finish_reason?()
@@ -9,19 +9,33 @@ module Instruct
     end
 
     def call(req, _next:)
-      call_options = @options.merge(req.env).merge(prompt: req.prompt_object)
-      response = call_options[:stream] = OpenAICompletionResponse.new(**req.response_kwargs)
-      _client_response = @client.completions(parameters: call_options)
+      call_options = @options.merge(req.env[:openai_args]||{}).merge(req.env[:openai_deprecated_args]||{}).merge(prompt: req.prompt_object)
+      if !@deprecated_arg_warned && req.env[:openai_deprecated_args] && !req.env[:openai_deprecated_args].empty? && @client.uri_base == 'https://api.openai.com/'
+        puts "Warning: the follow args are deprecated by OpenAI and will be removed in the future: #{req.env[:openai_deprecated_args].keys.join(', ')}"
+        @deprecated_arg_warned = true
+      end
+      if @middlewares.include?(Instruct::ChatCompletionMiddleware)
+        response = call_options[:stream] = Instruct::OpenAI::ChatCompletionResponse.new(**req.response_kwargs)
+      else
+        if !@warned && @client.uri_base == 'https://api.openai.com/'
+          puts "Warning: the completions endpoint is being shutdown by OpenAI in Jan 2025."
+          @warned = true
+        end
+        response = call_options[:stream] = Instruct::OpenAI::CompletionResponse.new(**req.response_kwargs)
+        _client_response = @client.completions(parameters: call_options)
+      end
       response
     end
 
 
-    def initialize(model: 'gpt-3.5-turbo-instruct', middlewares: nil, access_token: nil, log_errors: true, **options)
-      @middlewares = middlewares
+    def initialize(model: 'gpt-3.5-turbo-instruct', middlewares: nil, access_token: nil, log_errors: true, **options, &block)
+      @middlewares = middlewares || []
+      @middlewares << ArgsMiddleware.new
       @options = options
       @options[:model] = model
-      @client = OpenAI::Client.new( access_token: access_token || ENV['OPENAI_API_KEY'], log_errors: ) do |f|
+      @client = OpenAI::Client.new( access_token: access_token || ENV['OPENAI_API_KEY'], log_errors: , options:) do |f|
         # f.adapter :async_http # would love to enable this but it's not working
+        block.call(f) if block
       end
     end
   end

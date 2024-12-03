@@ -29,7 +29,7 @@ module Instruct
 
    def call(**kwargs, &streaming_block)
      kwargs = @kwargs.merge(kwargs)
-     completion = Transcript::Completion.new(@transcript.dup, **kwargs)
+     completion = Transcript::Completion.new(@transcript.dup)
      transcript = transcript_without_gen_attachment
      request = Gen::CompletionRequest.new(transcript, completion, **kwargs)
      if streaming_block
@@ -43,8 +43,6 @@ module Instruct
      completion_string = response.attributed_string
      set_updated_transcript_on_completion(completion_string, request.transcript)
      set_capture_keys_on_completion(completion_string)
-     # attr_string.add_arr_attrs()
-     # capture_result_in_variable(attr_string, **kwargs)
      @results << completion_string
      completion_string
    end

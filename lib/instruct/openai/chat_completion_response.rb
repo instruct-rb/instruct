@@ -1,5 +1,5 @@
-module Instruct
-  class OpenAIChatCompletionResponse < Gen::CompletionResponse
+module Instruct::OpenAI
+  class ChatCompletionResponse < Instruct::Gen::CompletionResponse
 
     def call(chunk)
       case SymbolizeKeys.recursive(chunk)
