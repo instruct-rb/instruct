@@ -22,7 +22,7 @@ class Instruct::Gen
 
     def append_text_chunk(text_chunk)
       text_chunk = AttributedString.new(text_chunk) unless text_chunk.is_a?(AttributedString)
-      text_chunk.add_attrs(stream_chunk: @chunks + 1, source: :llm)
+      text_chunk.add_attrs(stream_chunk: @chunks, source: :llm)
       response_buffer.concat(text_chunk)
     end
 
