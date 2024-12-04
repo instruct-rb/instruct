@@ -74,6 +74,36 @@ class LLMCompletionsTest < Minitest::Test
     @mock.verify
   end
 
+  def test_result_adds_in_correctly_in_two_part_string_with_double_arrow
+    @mock = MockCompletionModel.new(middlewares: [Instruct::ChatCompletionMiddleware])
+    self._instruct_default_model = @mock
+    @mock.expect_completion({ messages: [ { user: "The capital of France is".prompt_safe } ]}, "Paris")
+    ts = Instruct::Transcript.new
+    ts << p{"user: The capital of France is"} + gen.capture(:france) + "\n"
+    @mock.verify
+    assert_equal "Paris", ts.captured(:france).to_s
+    assert_equal "user: The capital of France is\nassistant: Paris\n", ts.to_s
+  end
+
+  def test_adds_two_gens_in_correctly_on_updated_transcript
+    @mock = MockCompletionModel.new(middlewares: [Instruct::ChatCompletionMiddleware])
+    self._instruct_default_model = @mock
+    @mock.expect_completion({ messages: [ { user: "The capital of France is".prompt_safe } ]}, "Paris")
+    @mock.expect_completion(nil, "Berlin")
+    ts = Instruct::Transcript.new
+    ts << p{"user: The capital of France is"} + gen.capture(:france) + "\n".prompt_safe + p{"user: The capital of Germany is"} + gen.capture(:germany) + "\n".prompt_safe
+    @mock.verify
+    assert_equal "Paris", ts.captured(:france).to_s
+    assert_equal "Berlin", ts.captured(:germany).to_s
+    expected = <<~TT
+      user: The capital of France is
+      assistant: Paris
+      user: The capital of Germany is
+      assistant: Berlin
+    TT
+    assert_equal expected, ts.to_s
+  end
+
   def test_perform_single_concat
     assert_raises do
       "The capital of France is " << gen()

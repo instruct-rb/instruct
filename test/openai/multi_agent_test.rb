@@ -18,16 +18,16 @@ class OpenAIBasicTest < Minitest::Test
 
     # We start a dynamic Q&A loop with the interviewer by kicking off the
     # interviewing agent and capturing the response under the :reply key.
-    interviewer << p{"\nuser: __Noel sits down in front of you.__"} + gen.capture(:reply)
+    interviewer << p{"\nuser: __Noel sits down in front of you.__"} + gen.capture(:reply) + "\n".prompt_safe
 
     puts interviewer.captured(:reply) # => "Hello Noel, how are you today?"
 
-    5.times do
+    2.times do
       # Noel is sent the last value captured in the interviewer's transcript under the :reply key.
       # Similarly, we generate a response for Noel and capture it under the :reply key.
       print "Noel: "
       noel << p{"\nuser: <%= interviewer.captured(:reply) %>"}
-      prompt = noel + gen.capture(:reply, list: :replies)
+      prompt = noel + gen.capture(:reply, list: :replies) + "\n".prompt_safe
       resp = prompt.call do |resp|
         print resp.get_chunk
       end
@@ -36,7 +36,8 @@ class OpenAIBasicTest < Minitest::Test
 
 
       # Noel's captured reply is now sent to the interviewer, who captures it in the same way.
-      interviewer << p{"\nuser: <%=  noel.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
+      prompt = p{"user: <%=  noel.captured(:reply) %>"} + gen.capture(:reply, list: :replies) + "\n".prompt_safe
+      interviewer << prompt
       print "Interviewer: "
       print interviewer.captured(:reply)
       print "\n\n"
@@ -46,7 +47,7 @@ class OpenAIBasicTest < Minitest::Test
     noel_said = noel.captured(:replies).map{ |r| "noel: #{r}" }
     interviewer_said = interviewer.captured(:replies).map{ |r| "interviewer: #{r}" }
 
-    puts interviwer_said.zip(noel_said).flatten.join("\n\n")
+    puts noel_said.zip(interviewer_said).flatten.join("\n\n")
     # => "noel: ... \n\n interviewer: ..., ..."
   end
 end
