@@ -66,6 +66,7 @@ module Instruct
         gens << obj[:attachment]
         next_substring_index = position + 1
       end
+      substrings << self[next_substring_index..self.length - 1] if next_substring_index <= self.length - 1
       return [gens, substrings]
     end
 
@@ -159,11 +160,13 @@ module Instruct
       def apply_to_transcript(transcript)
         deferred_gens = transcript.attachments_with_positions.filter { |obj| obj[:attachment].is_a?(Instruct::Gen) }
         first_gen = deferred_gens.first
-        return transcript.replace(transcript.+(self, apply_completions: false)) if first_gen.nil?
+        if first_gen.nil?
+          return transcript.replace(transcript.+(self, apply_completions: false))
+        end
         # if the transcript matches the prompt, we replace the transcript with the updated transcript
         # otherwise we just append the updated transcript to the transcript
         # in both cases we remove the gen attachment
-        if transcript == prompt
+        if (first_gen && transcript[..first_gen[:position]] == prompt) || (first_gen.nil? && transcript == prompt)
           transcript.send(:add_captured, self, @key, @list_key)
           transcript[..first_gen[:position]] = @updated_transcript.+(self, apply_completions: false)
         else
@@ -182,8 +185,6 @@ module Instruct
         filtered = self.filter { |attrs| attrs[:stream_chunk] == chunk }
         ranges = filtered.original_ranges_for(0..(filtered.length - 1))
         ranges.map { |range| self[range] }.join
-      rescue StandardError => e
-        binding.irb
       end
 
 
