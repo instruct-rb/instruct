@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.files         = Dir["*.{md,txt}", "{lib}/**/*", "LICENSE"]
   spec.require_path  = "lib"
 
-  spec.required_ruby_version = ">= 3.3"
+  spec.required_ruby_version = ">= 3.2.3"
 
 
   # removing from std lib in ruby 3.5
