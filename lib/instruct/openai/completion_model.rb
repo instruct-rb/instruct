@@ -36,7 +36,7 @@ module Instruct::OpenAI
       @middlewares << Middleware.new
       @options = options
       @options[:model] = model
-      @client = OpenAI::Client.new( access_token: access_token || ENV['OPENAI_API_KEY'], log_errors: , options:) do |f|
+      @client = OpenAI::Client.new( access_token: access_token || ENV['OPENAI_API_KEY'] || ENV['OPENAI_ACCESS_TOKEN'], log_errors: , options:) do |f|
         # f.adapter :async_http # would love to enable this but it's not working
         block.call(f) if block
       end
