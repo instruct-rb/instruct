@@ -11,7 +11,7 @@ module Instruct::OpenAI
     def call(req, _next:)
       call_options = @options.merge(req.env[:openai_args]||{}).merge(req.env[:openai_deprecated_args]||{})
       if !@deprecated_arg_warned && req.env[:openai_deprecated_args] && !req.env[:openai_deprecated_args].empty? && @client.uri_base == 'https://api.openai.com/'
-        puts "Warning: the follow args are deprecated by OpenAI and will be removed in the future: #{req.env[:openai_deprecated_args].keys.join(', ')}"
+        puts "Warning: the follow args are deprecated by OpenAI and will be removed in the future: #{req.env[:openai_deprecated_args].keys.join(', ')}" unless Instruct.suppress_warnings
         @deprecated_arg_warned = true
       end
       if @middlewares.any? { |m| m.is_a?(Instruct::ChatCompletionMiddleware) || m == Instruct::ChatCompletionMiddleware }
@@ -20,7 +20,7 @@ module Instruct::OpenAI
         _client_response = @client.chat(parameters: call_options)
       else
         if !@warned && @client.uri_base == 'https://api.openai.com/'
-          puts "Warning: the completions endpoint is being shutdown by OpenAI in Jan 2025."
+          puts "Warning: the completions endpoint is being shutdown by OpenAI in Jan 2025." unless Instruct.suppress_warnings
           @warned = true
         end
         response = call_options[:stream] = Instruct::OpenAI::CompletionResponse.new(**req.response_kwargs)

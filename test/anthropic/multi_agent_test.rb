@@ -3,12 +3,12 @@ require "test_helper"
 require "ruby/openai"
 
 # These tests could be flakey as they are based on llm responses
-class OpenAIMultiAgentTest < Minitest::Test
+class AnthropicMultiAgentTest < Minitest::Test
   include Instruct::Helpers
   using Instruct::Refinements
 
   def setup
-    self.instruct_default_model = 'gpt-4o'
+    self.instruct_default_model = 'claude-3-5-sonnet-latest'
   end
 
   def test_it_works

@@ -241,6 +241,24 @@ lm.streamed_gen do |response|
 end
 ```
 
+# Streaming JSON
+Partial JSON is not very useful. But it is common enough to request a collection of JSON objects as a response, as in our earlier example of asking for the heights of the 3 tallest mountains.
+
+If you ask it to, this gem will also do its best to sort this out for you:
+
+client.messages(
+  parameters: {
+    model: "claude-3-haiku-20240307",
+    messages: [{ role: "user", content: "How high is the sky?" }],
+    max_tokens: 50,
+    stream: Proc.new { |json_object| process_your(json_object) },
+    preprocess_stream: :json
+  }
+)
+Each time a } is reached in the stream, the preprocessor will take what it has in the preprocessing stack, pick out whatever's between the widest { and }, and try to parse it into a JSON object. If it succeeds, it will pass you the json object, reset its preprocessing stack, and carry on.
+
+If the parsing fails despite reaching a }, currently, it will catch the Error, log it to $stdout, ignore the malformed object, reset the preprocessing stack and carry on. This does mean that it is possible, if the AI is sending some malformed JSON (which can happen, albeit rarely), that some objects will be lost.
+
 ## Streaming capture and constrained output
 
 Streaming capture can be used to lower the latency of chained output that

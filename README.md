@@ -54,12 +54,14 @@ use Instruct.
   using Instruct::Refinements
 ```
 
-Instruct supports the ruby openai gem out of the box, simply include the
-ruby-openai gem in your Gemfile.
+Instruct supports the ruby-openai gem and anthropic out of the box, simply include the
+either or both gems in your Gemfile.
 
 ```ruby
-  gem 'openai'
+  gem 'ruby-openai'
+  gem 'anthropic'
 ```
+
 
 ## Usage
 
@@ -93,7 +95,7 @@ prompts that can be called multiple times or passed around as an argument.
   puts prompt # => "The capital of France is 💬!"
 
   # Each time the prompt is called, a new completion is generated and returned.
-  completion = transcript.call
+  completion = prompt.call
 
   puts completion # => "Paris"
 
@@ -301,7 +303,9 @@ ideas.
 
 - Middleware
   - [ ] Constraint based validation with automatic retries
-  - [ ] New Conversation middleware with default to user with system kw arg or assistant kw arg (maybe its one and the same?)
+  - [ ] Improvments to chat completion middleware
+    - [ ] Allow role switching on the same line but then in the updated transcript fix it
+    - [ ] New Conversation middleware with default to user with system kw arg or assistant kw arg (maybe its one and the same?)
   - [ ] Conversation management (prune long running conversations)
   - [ ] Async support (waiting on async support in ruby-openai). This enables
         the use of async calls to the LLM and the use of async middleware.
@@ -312,8 +316,11 @@ ideas.
   - [ ] Support transform attachments in the transcript intos multi-modal input
   - [ ] Anthropic caching
   - [ ] Visualize streaming transcript as a tree in web interface (dependent on forking)
+  - [ ] Standardize finish reasons, and shared call arguments
 - Models
-  - [ ] Anthropic model selection
+  - [x] OpenAI API model selection
+  - [x] Anthropic API model selection
+  - [ ] Gemini models
   - [ ] Local models
     - [ ] Constrained inference like Guidance
     - [ ] Token healing
@@ -322,7 +329,8 @@ ideas.
   - [ ] Change middleware by passing it into the gen or call methods
   - [ ] Tool calling
     - [ ] Develop an intuitive API for calling tools
+  - [ ] Batch APIs
   - [ ] Improve attributed string API with a visitor style presenter
     - [ ] Update middleware and printers to use the new presenters
   - [ ] Serialization of transcripts (Consider migrations / upgrades) for storage
-  - [ ] `stop_chars` and `stop`
+  - [x] `stop_chars` and `stop`

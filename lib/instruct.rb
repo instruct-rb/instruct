@@ -39,16 +39,30 @@ begin
 rescue LoadError
 end
 
+# if the caller is using ruby-openai gem
 begin
   require "ruby/openai"
 rescue LoadError
 end
 
 if defined? ::OpenAI
-  require_relative "instruct/openai/middleware"
-  require_relative "instruct/openai/completion_model"
-  require_relative "instruct/openai/completion_response"
-  require_relative "instruct/openai/chat_completion_response"
+  require_relative "instruct/llms/openai/middleware"
+  require_relative "instruct/llms/openai/completion_model"
+  require_relative "instruct/llms/openai/completion_response"
+  require_relative "instruct/llms/openai/chat_completion_response"
   Instruct.openai_loaded = true
+else
+end
+
+# if the caller is using ruby/anthropic gem
+begin require "anthropic"
+rescue LoadError
+end
+
+if defined? ::Anthropic
+  require_relative "instruct/llms/anthropic/middleware"
+  require_relative "instruct/llms/anthropic/completion_model"
+  require_relative "instruct/llms/anthropic/messages_completion_response"
+  Instruct.anthropic_loaded = true
 else
 end

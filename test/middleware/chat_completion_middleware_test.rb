@@ -6,7 +6,7 @@ class ChatCompletionMiddlewareTest < MiddlewareTest
 
   def setup
     @mock = MockCompletionModel.new(middlewares: [Instruct::ChatCompletionMiddleware])
-    self._instruct_default_model = @mock
+    self.instruct_default_model = @mock
   end
 
   def test_it_creates_the_roles

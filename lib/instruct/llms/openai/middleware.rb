@@ -1,5 +1,7 @@
 module Instruct::OpenAI
   class Middleware
+    CLIENT_PARAMS = %i[access_token anthropic_version api_version extra_headers request_timeout uri_base].freeze
+    REQUEST_PARAMS = %i[store metadata frequency_penalty logit_bias logprobs top_logprobs max_completion_tokens n prediction presence_penalty response_format seed service_tier stop stream_options temperature top_p user].freeze
     def call(req, _next:)
       raise Instruct::Todo, "Non text modalities not supported yet, consider opening a pull request" if req.env[:modalities] && (req.env[:modalities] != [:text] || req.env[:modalities] != ["text"])
       raise Instruct::Todo, "Tools are not supported yet, consider opening a pull request" if req.env[:tools] || req.env[:tool_choice] || req.env[:parallel_tool_calls] || req.env[:function_call] || req.env[:functions]
@@ -15,6 +17,7 @@ module Instruct::OpenAI
         req.env[:stop] = req.env[:stop_chars].split('')
       end
 
+      # TODO: make this more like anthropic
       args = [:store, :metadata, :frequency_penalty, :logit_bias, :logprobs, :top_logprobs, :max_completion_tokens]
       args += [:n, :prediction, :presence_penalty, :response_format, :seed, :service_tier]
       args += [:stop, :stream_options, :temperature, :top_p, :user]

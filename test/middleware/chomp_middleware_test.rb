@@ -6,7 +6,7 @@ class ChompMiddlewareTest < Minitest::Test
 
   def setup
     @mock = MockCompletionModel.new(middlewares: [Instruct::ChompMiddleware])
-    self._instruct_default_model = @mock
+    self.instruct_default_model = @mock
   end
 
   def test_that_a_prompt_is_chomped

@@ -6,7 +6,7 @@ class Test < Minitest::Test
 
   def setup
     @mock = MockCompletionModel.new
-    self._instruct_default_model = @mock
+    self.instruct_default_model = @mock
   end
 
   def test_transcripts_are_unsafe_by_default

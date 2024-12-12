@@ -6,7 +6,7 @@ class TranscriptHideFromPromptTest < MiddlewareTest
 
   def setup
     @mock = MockCompletionModel.new
-    self._instruct_default_model = @mock
+    self.instruct_default_model = @mock
   end
 
   def test_transcript_marked_for_deletion_not_in_prompt

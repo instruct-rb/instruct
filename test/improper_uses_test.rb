@@ -5,7 +5,7 @@ class ImproperUsesTest < Minitest::Test
 
   def setup
     @mock = MockCompletionModel.new
-    self._instruct_default_model = @mock
+    self.instruct_default_model = @mock
   end
 
   def test_add_results

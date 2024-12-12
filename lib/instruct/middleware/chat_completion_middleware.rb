@@ -34,12 +34,20 @@ module Instruct
 
       start_pos = 0
       role = @roles.first
+      # TODO: we want to make it so that if no role changes are defined we fallback to the
+      # default user role, and use the system: to define the system arg.
       role_changes.each do |change|
         if change[:control_start] > start_pos
+          if role == :system
+            req.env[:system_from_prompt] = req.transcript[start_pos...change[:control_start]]
+          end
           req.transcript.add_attrs(start_pos...change[:control_start], role: role)
         end
         start_pos = change[:control_finish] + 1
         role = change[:role]
+      end
+      if role == :system
+        req.env[:system_from_prompt] = req.transcript[start_pos...req.transcript.length]
       end
       req.transcript.add_attrs(start_pos...req.transcript.length, role: role)
 

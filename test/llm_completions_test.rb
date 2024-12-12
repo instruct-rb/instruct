@@ -6,7 +6,7 @@ class LLMCompletionsTest < Minitest::Test
 
   def setup
     @mock = MockCompletionModel.new
-    self._instruct_default_model = @mock
+    self.instruct_default_model = @mock
   end
 
   def test_perform_alternative_call
@@ -76,7 +76,7 @@ class LLMCompletionsTest < Minitest::Test
 
   def test_result_adds_in_correctly_in_two_part_string_with_double_arrow
     @mock = MockCompletionModel.new(middlewares: [Instruct::ChatCompletionMiddleware])
-    self._instruct_default_model = @mock
+    self.instruct_default_model = @mock
     @mock.expect_completion({ messages: [ { user: "The capital of France is".prompt_safe } ]}, "Paris")
     ts = Instruct::Transcript.new
     ts << p{"user: The capital of France is"} + gen.capture(:france) + "\n"
@@ -87,7 +87,7 @@ class LLMCompletionsTest < Minitest::Test
 
   def test_adds_two_gens_in_correctly_on_updated_transcript
     @mock = MockCompletionModel.new(middlewares: [Instruct::ChatCompletionMiddleware])
-    self._instruct_default_model = @mock
+    self.instruct_default_model = @mock
     @mock.expect_completion({ messages: [ { user: "The capital of France is".prompt_safe } ]}, "Paris")
     @mock.expect_completion(nil, "Berlin")
     ts = Instruct::Transcript.new
