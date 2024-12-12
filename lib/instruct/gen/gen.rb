@@ -27,10 +27,14 @@ module Instruct
      @results.any?
    end
 
+   # This is the method that actually calls the LLM API with the transcript and creates a completion
+   # @param model this is a model object or the name of a model.
+   # @param client_opts: this is an optional hash of options to pass to the API client when initializing a client model with a string
+   # @block streaming_block: this is an optional block that will be called with each chunk of the response when the response is streamed
    def call(model: nil, **kwargs, &streaming_block)
      kwargs = @kwargs.merge(kwargs)
-     model = Instruct::Model.from_string(model) if model.class == String
-     model ||= @model
+     model ||= @model || Instruct.default_model
+     model = Instruct::Model.from_string(model) if model.is_a?(String)
 
      completion = Transcript::Completion.new(duped_transcript: @transcript.dup)
      transcript = transcript_without_gen_attachment

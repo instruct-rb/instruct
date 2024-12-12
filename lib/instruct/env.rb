@@ -1,9 +1,12 @@
 module Instruct
   class << self
-    attr_accessor :default_model
+    attr_accessor :suppress_warnings
+    attr_accessor :openai_loaded, :anthropic_loaded
     def default_model
-      @default_model ||= 'gpt-3.5-turbo-instruct'
+      @default_model
     end
-    attr_accessor :openai_loaded
+    def default_model=(model)
+      @default_model = Instruct::Model.from_string_or_model(model)
+    end
   end
 end

@@ -1,8 +1,25 @@
 module Instruct
   module Model
-    def self.from_string(string, **kwargs)
-        self.openai(string, **kwargs)
+
+    def self.from_string_or_model(model)
+      if model.class == String
+        self.from_string(model)
+      elsif model.respond_to?(:call)
+        model
+      else
+        raise ArgumentError, "Model must be a model name string or respond to call."
+      end
     end
+
+
+    def self.from_string(string, **kwargs)
+      if string.include?("claude") || string.include?("anthropic")
+        Instruct::Anthropic.new(string, **kwargs)
+      else
+        self.openai(string, **kwargs)
+      end
+    end
+
     def self.openai(string, **kwargs)
       case string
       when "gpt-3.5-turbo-instruct"
@@ -13,6 +30,7 @@ module Instruct
     end
 
     private
+    # Move this into the openai gem
     def self.openai_load_conversation_model(model, **kwargs)
       raise RuntimeError, "Cannot load an OpenAI API model without ruby-openai gem." unless Instruct.openai_loaded
       middlewares = kwargs.delete(:middlewares) || []
