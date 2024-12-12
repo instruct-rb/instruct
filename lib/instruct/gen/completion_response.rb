@@ -46,7 +46,7 @@ class Instruct::Gen
     end
 
     def attributed_string
-      response_buffer
+      response_buffer.dup.add_attrs(stop_reason: finished_reason)
     end
     # def append_function_call
     # end
