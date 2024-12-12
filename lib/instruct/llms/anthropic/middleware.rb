@@ -1,6 +1,7 @@
 class Instruct::Anthropic
   class Middleware
-    CLIENT_PARAMS = %i[access_token anthropic_version api_version extra_headers request_timeout uri_base].freeze
+    CLIENT_PARAMS = %i[access_token anthropic_version api_version extra_headers request_timeout uri_base beta].freeze
+    # TODO: make request params settable at the model level, its silly to not set temperature in one place
     REQUEST_PARAMS = %i[metadata max_tokens temperature tools tool_choice top_k top_p stop_sequences system].freeze
 
     def call(req, _next:)
@@ -67,6 +68,7 @@ class Instruct::Anthropic
     # This method takes the beta argument and transforms it into a header for the client
     def transform_beta_argument_into_extra_headers(client_options, beta)
       return unless beta
+      client_options.delete(:beta)
       client_options[:extra_headers] ||= {}
 
       if client_options[:extra_headers]['anthropic-beta']

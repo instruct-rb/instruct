@@ -8,6 +8,10 @@ module Instruct::OpenAI
       @middleware_chain ||= Instruct::MiddlewareChain.new(middlewares: (@middlewares || []) << self)
     end
 
+    def default_request_env
+      {}
+    end
+
     def call(req, _next:)
       call_options = @options.merge(req.env[:openai_args]||{}).merge(req.env[:openai_deprecated_args]||{})
       if !@deprecated_arg_warned && req.env[:openai_deprecated_args] && !req.env[:openai_deprecated_args].empty? && @client.uri_base == 'https://api.openai.com/'

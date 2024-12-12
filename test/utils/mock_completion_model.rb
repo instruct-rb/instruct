@@ -2,10 +2,12 @@
 class MockCompletionModel
 
 
-  def initialize(middlewares: [])
+  attr_reader :default_request_env
+  def initialize(middlewares: [], **kwargs)
     @position = 0
     @expected_calls = []
     @middlewares = middlewares
+    @default_request_env = kwargs
   end
 
 

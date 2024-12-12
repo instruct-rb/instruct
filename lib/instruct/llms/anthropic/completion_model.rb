@@ -3,9 +3,10 @@ module Instruct
 
     # params client_or_model_name [Anthropic::Client, String] Client instance or model name string
     # params model [String] Required model name to use for completion if client is provided as first arg
+    attr_reader :default_request_env
     def initialize(client_or_model_name = "claude-3-5-sonnet-latest", middlewares: [], **kwargs)
       @middlewares = middlewares
-      @client_opts = kwargs
+      @default_request_env = kwargs
       @cached_clients = {}
 
       if client_or_model_name.is_a? ::Anthropic::Client
@@ -80,14 +81,13 @@ module Instruct
         return @client
       end
 
-      new_opts = @client_opts.merge(req_client_opts)
-      @cached_clients[new_opts.hash] ||=  ::Anthropic::Client.new(new_opts)
+      @cached_clients[req_client_opts.hash] ||=  ::Anthropic::Client.new(req_client_opts)
     end
 
 
     def set_access_token_from_env_if_needed
       access_key = ENV["ANTHROPIC_ACCESS_TOKEN"] || ENV["ANTHROPIC_API_KEY"]
-      @client_opts[:access_token] = access_key if access_key && @client_opts[:access_token].nil?
+      @default_request_env[:access_token] = access_key if access_key && @default_request_env[:access_token].nil?
     end
 
     def warn_about_latest_model_if_needed(model_name)

@@ -73,10 +73,13 @@ either or both gems in your Gemfile.
 
 Getting a single completion from an LLM is as simple as calling `gen` with a prompt.
 
+If the first argument is present, it will be used as the prompt for the LLM
+and the completion will be returned immediately.
+
+The model can be set with the model keyword argument if no default model is
+set.
 ```ruby
-# If the first argument is present, it will be used as the prompt for the LLM
-# and the completion will be returned.
-completion = gen("The capital of France is", stop_chars: "\n ,;.")
+completion = gen("The capital of France is ", stop_chars: "\n ,.")
 
 puts completion # => "Paris"
 ```
