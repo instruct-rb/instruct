@@ -355,4 +355,6 @@ ideas.
   - [ ] Improve attributed string API with a visitor style presenter
     - [ ] Update middleware and printers to use the new presenters
   - [ ] Serialization of transcripts (Consider migrations / upgrades) for storage
+    - [ ] Register ActiveJob serializer for transcripts so that they can be added to the job queue
+    - [ ] Register ActiveRecord serializer for transcripts so that they can be stored in the database
   - [x] `stop_chars` and `stop`
