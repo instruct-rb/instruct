@@ -59,5 +59,20 @@ class ChatCompletionMiddlewareTest < MiddlewareTest
     @mock.verify
   end
 
+  def test_it_creates_the_roles_after_serialization
+    prompt = p{<<~ERB.chomp
+      system: a
+      user: b
+      assistant: c
+    ERB
+    } + gen()
+    @mock.expect_completion({ messages: [ { system: "a".prompt_safe }, { user: "b".prompt_safe }, { assistant: "c".prompt_safe } ]}, "d")
+    prompt = Instruct::Serializer.load(Instruct::Serializer.dump(prompt))
+    result = prompt.call
+    mock = prompt.attachments.last.model
+    mock.verify
+    assert_equal "d", result.to_s
+  end
+
 
 end

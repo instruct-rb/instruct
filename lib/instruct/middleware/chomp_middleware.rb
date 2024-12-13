@@ -8,7 +8,8 @@ module Instruct
   # removed from the transcript. If the response does have the same whitespace
   # it is chomped from the response.
   class ChompMiddleware
-
+    include Instruct::Serializable
+    set_instruct_class_id 5
 
     def call(req, _next:)
 

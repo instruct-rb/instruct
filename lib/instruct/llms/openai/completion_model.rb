@@ -1,5 +1,8 @@
 module Instruct
   class OpenAI
+    include Instruct::Serializable
+    set_instruct_class_id 100
+
     attr_reader :default_request_env
 
     def middleware_chain(req)

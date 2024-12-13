@@ -49,4 +49,11 @@ class OpenAIBasicTest < Minitest::Test
     response = prompt.call(temperature: 0, stop_chars: "\n. ", model: 'gpt-3.5-turbo')
     assert_equal "d", response.to_s
   end
+
+  def test_serialized_model_works
+    prompt = "system: you're an alphabet bot\nuser: ab\nassistant: c\n" + gen
+    prompt = Instruct::Serializer.load(Instruct::Serializer.dump(prompt))
+    response = prompt.call(temperature: 0, stop_chars: "\n. ", model: 'gpt-3.5-turbo')
+    assert_equal "d", response.to_s
+  end
 end

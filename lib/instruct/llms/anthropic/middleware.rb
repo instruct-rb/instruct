@@ -1,5 +1,8 @@
 class Instruct::Anthropic
   class Middleware
+    include Instruct::Serializable
+    set_instruct_class_id 201
+
     CLIENT_PARAMS = %i[access_token anthropic_version api_version extra_headers request_timeout uri_base beta].freeze
     # TODO: make request params settable at the model level, its silly to not set temperature in one place
     REQUEST_PARAMS = %i[metadata max_tokens temperature tools tool_choice top_k top_p stop_sequences system].freeze

@@ -2,6 +2,8 @@ module Instruct
   # Converts transcript plain text entries into role-based conversation entries
   # See {file:docs/prompt-completion-middleware.md#label-Chat+Completion+Middleware}
   class ChatCompletionMiddleware
+    include Instruct::Serializable
+    set_instruct_class_id 4
 
     def initialize(roles: [:system, :user, :assistant])
       @roles = roles

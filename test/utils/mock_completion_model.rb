@@ -1,6 +1,6 @@
 # A mock class used to simulate a completion model such as gpt-3.5-turbo-instruct.
 class MockCompletionModel
-
+  include Instruct::Serializable
 
   attr_reader :default_request_env
   def initialize(middlewares: [], **kwargs)

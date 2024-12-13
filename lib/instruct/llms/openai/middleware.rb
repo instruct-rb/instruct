@@ -1,5 +1,7 @@
 class Instruct::OpenAI
   class Middleware
+    include Instruct::Serializable
+    set_instruct_class_id 101
     CLIENT_PARAMS = %i[api_type api_version access_token organization_id uri_base request_timeout extra_headers].freeze
     REQUEST_PARAMS = %i[store metadata frequency_penalty logit_bias logprobs top_logprobs max_completion_tokens n prediction presence_penalty response_format seed service_tier stop stream_options temperature top_p user].freeze
 

@@ -1,5 +1,8 @@
 module Instruct
   class Transcript < AttributedString
+    include Instruct::Serializable
+    set_instruct_class_id 1
+
 
     def call(**kwargs, &streaming_block)
       raise ArgumentError, "cannot add transcript to call on transcript" if kwargs[:transcript]
@@ -151,6 +154,8 @@ module Instruct
     # only when the result is added to the transcript. In all other cases,
     # the transcript is not modified and the result is the normal result.
     class Completion < AttributedString
+      include Instruct::Serializable
+      set_instruct_class_id 3
       attr_reader :prompt
       def initialize(*args, duped_transcript: nil, **kwargs)
         super(*args, **kwargs)

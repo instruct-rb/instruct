@@ -1,5 +1,8 @@
 module Instruct
  class Gen
+   include Instruct::Serializable
+   set_instruct_class_id 2
+
    attr_accessor :transcript, :model, :kwargs
    attr_reader :results
    def initialize(transcript:, model:, **kwargs)
@@ -11,11 +14,14 @@ module Instruct
      @capture_list_key = nil
    end
 
+
    def ==(other)
      return false unless other.is_a?(Gen)
      # skip looking at transcript and results for now as it makes two prompts not equal with a gen
      # that has run and one that hasn't
-     @model == other.model && @kwargs == other.kwargs
+     return false if @kwargs != other.kwargs
+     return false if @model.is_a?(String) && other.model.is_a?(String) && @model != other.model
+     return @model.class == other.model.class
    end
 
    def capture(key, list: nil)

@@ -43,5 +43,13 @@ class AnthropicBasicTest < Minitest::Test
     end
   end
 
+  def test_serialized_model_works
+    prompt = "system: you're an alphabet bot\nuser: a b\nassistant: c\n".prompt_safe + gen
+    prompt = Instruct::Serializer.load(Instruct::Serializer.dump(prompt))
+    response = prompt.call(temperature: 0, stop_chars: ".", max_tokens: 25)
+    assert_equal " d e f g h i j k l m n o p q r s t u v w x y z" , response.to_s
+    stop_reason = response.attrs_at(0)[:stop_reason]
+    assert_equal "max_tokens", stop_reason
+  end
 
 end

@@ -1,4 +1,5 @@
 require_relative "instruct/version"
+
 # stdlib
 require 'erb'
 require 'ostruct'
@@ -10,6 +11,8 @@ require 'attributed-string'
 
 
 # utils
+require_relative "instruct/utils/serializer"
+require_relative "instruct/utils/serializable_with_version"
 require_relative "instruct/utils/middleware_chain"
 require_relative "instruct/utils/symbolize_keys"
 require_relative "instruct/utils/variables"

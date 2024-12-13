@@ -53,4 +53,16 @@ class ChompMiddlewareTest < Minitest::Test
     assert_equal ["Zebra", "Lion"], lm.captured(:animals)
     assert_equal "Lion", lm.captured(:animal)
   end
+
+  def test_model_with_chomp_middleware_serializes
+    @mock.expect_completion("a prompt:", " a response")
+    prompt = Instruct::Transcript.new("a prompt: ") + gen()
+    prompt = Instruct::Serializer.load(Instruct::Serializer.dump(prompt))
+    result = prompt.call
+    mock = prompt.attachments.last.model
+    mock.verify
+    assert_equal("a response", result.to_s)
+    assert_equal "a prompt: a response", (prompt + result)
+    assert_equal "a prompt: a response", (prompt + result).prompt_object.to_s
+  end
 end

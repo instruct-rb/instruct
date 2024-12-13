@@ -1,5 +1,7 @@
 module Instruct
   class Anthropic
+    include Instruct::Serializable
+    set_instruct_class_id 200
 
     # params client_or_model_name [Anthropic::Client, String] Client instance or model name string
     # params model [String] Required model name to use for completion if client is provided as first arg
@@ -23,6 +25,12 @@ module Instruct
       append_default_middleware_if_not_added
       set_access_token_from_env_if_needed
     end
+
+    # TODO: serialize whats needed or raise error
+    # alias_method :old_encode_with, :encode_with
+    # def encode_with(coder)
+    #
+    # end
 
     def middleware_chain(req)
       @middleware_chain ||= Instruct::MiddlewareChain.new(middlewares: (@middlewares || []) << self)
