@@ -1,6 +1,6 @@
 class Instruct::OpenAI
   class Middleware
-    CLIENT_PARAMS = %i[access_token api_version uri_base request_timeout extra_headers].freeze
+    CLIENT_PARAMS = %i[api_type api_version access_token organization_id uri_base request_timeout extra_headers].freeze
     REQUEST_PARAMS = %i[store metadata frequency_penalty logit_bias logprobs top_logprobs max_completion_tokens n prediction presence_penalty response_format seed service_tier stop stream_options temperature top_p user].freeze
 
     def call(req, _next:)
