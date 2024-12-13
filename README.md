@@ -43,7 +43,7 @@ doesn't abstract away control.
 Add this line to your application's Gemfile:
 
 ```ruby
-  gem 'instruct'
+  gem "instruct"
 ```
 
 Include the helpers and refinements in the modules or classes where you want to
