@@ -1,3 +1,4 @@
+require_relative "instruct/version"
 # stdlib
 require 'erb'
 require 'ostruct'
@@ -25,7 +26,6 @@ require_relative "instruct/gen/gen"
 require_relative "instruct/middleware/chat_completion_middleware"
 require_relative "instruct/middleware/chomp_middleware"
 require_relative "instruct/transcript"
-require_relative "instruct/version"
 
 require_relative "instruct/helpers/erb_helper"
 require_relative "instruct/helpers/gen_helper"
