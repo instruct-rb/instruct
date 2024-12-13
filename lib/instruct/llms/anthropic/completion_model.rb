@@ -24,7 +24,7 @@ module Instruct
       set_access_token_from_env_if_needed
     end
 
-    def middleware_chain
+    def middleware_chain(req)
       @middleware_chain ||= Instruct::MiddlewareChain.new(middlewares: (@middlewares || []) << self)
     end
 
@@ -40,9 +40,14 @@ module Instruct
       messages_params[:stream] = Proc.new { |chunk| response.call(chunk) }
 
       begin
+        Instruct.logger.info("Sending Anthropic Messages Completion Request: (#{request_params}) Client:(#{client.inspect})") if Instruct.logger.sev_threshold <= Logger::INFO
         _client_response = client.messages(parameters: messages_params)
-      rescue Faraday::BadRequestError => e
-        puts "Error: #{e.response_body["error"]}"
+      rescue Faraday::Error => e
+        if e.respond_to?(:response_body)
+          Instruct.err_logger.error("#{e.response_body}")
+        else
+          Instruct.err_logger.error("#{e.inspect}")
+        end
         raise e
       end
 

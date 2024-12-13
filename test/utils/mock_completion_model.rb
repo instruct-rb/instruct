@@ -15,7 +15,7 @@ class MockCompletionModel
     @expected_calls << { expected_prompt: expected_prompt_or_nil, kwargs:, response: text_or_mock_stream_response, finish_reason: }
   end
 
-  def middleware_chain
+  def middleware_chain(req)
     @chain ||= Instruct::MiddlewareChain.new(middlewares: @middlewares + [self])
   end
 

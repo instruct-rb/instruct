@@ -34,7 +34,7 @@ module Instruct
    def call(model: nil, **kwargs, &streaming_block)
      kwargs = @kwargs.merge(kwargs)
      model ||= @model || Instruct.default_model
-     model = Instruct::Model.from_string(model) if model.is_a?(String)
+     model = Instruct::Model.from_string(model, **kwargs) if model.is_a?(String)
      kwargs = model.default_request_env.merge(kwargs)
 
      completion = Transcript::Completion.new(duped_transcript: @transcript.dup)

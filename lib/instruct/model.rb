@@ -16,7 +16,7 @@ module Instruct
       if string.include?("claude") || string.include?("anthropic")
         Instruct::Anthropic.new(string, **kwargs)
       else
-        self.openai(string, **kwargs)
+        Instruct::OpenAI.new(string, **kwargs)
       end
     end
 
@@ -31,16 +31,16 @@ module Instruct
 
     private
     # Move this into the openai gem
-    def self.openai_load_conversation_model(model, **kwargs)
-      raise RuntimeError, "Cannot load an OpenAI API model without ruby-openai gem." unless Instruct.openai_loaded
-      middlewares = kwargs.delete(:middlewares) || []
-      middlewares << ChompMiddleware.new
-      middlewares << ChatCompletionMiddleware.new
-      Instruct::OpenAI::CompletionModel.new(model:, middlewares:, **kwargs)
-    end
-    def self.openai_load_completion_model(model, **kwargs)
-      raise RuntimeError, "Cannot load an OpenAI API model without ruby-openai gem." unless Instruct.openai_loaded
-      Instruct::OpenAI::CompletionModel.new(model:, **kwargs)
-    end
+    # def self.openai_load_conversation_model(model, **kwargs)
+    #   raise RuntimeError, "Cannot load an OpenAI API model without ruby-openai gem." unless Instruct.openai_loaded
+    #   middlewares = kwargs.delete(:middlewares) || []
+    #   middlewares << ChompMiddleware.new
+    #   middlewares << ChatCompletionMiddleware.new
+    #   Instruct::OpenAI::CompletionModel.new(model:, middlewares:, **kwargs)
+    # end
+    # def self.openai_load_completion_model(model, **kwargs)
+    #   raise RuntimeError, "Cannot load an OpenAI API model without ruby-openai gem." unless Instruct.openai_loaded
+    #   Instruct::OpenAI::CompletionModel.new(model:, **kwargs)
+    # end
   end
 end

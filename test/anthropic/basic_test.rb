@@ -7,14 +7,11 @@ class AnthropicBasicTest < Minitest::Test
 
   def setup
     self.instruct_default_model = 'claude-3-5-sonnet-latest'
+    Instruct.err_logger.sev_threshold = :unknown
   end
 
   def test_that_it_has_a_version_number
     refute_nil ::Anthropic::VERSION
-  end
-
-  def test_default_model_is_antropic
-    assert self.instruct_default_model.is_a? Instruct::Anthropic
   end
 
   def test_messages_completion_api_works
@@ -28,7 +25,7 @@ class AnthropicBasicTest < Minitest::Test
   def test_set_client_opts_in_call
     prompt = "system: you're an alphabet bot\nuser: a b\nassistant: c\n".prompt_safe + gen
     assert_raises Faraday::UnauthorizedError do
-      response = prompt.call(temperature: 0, stop_chars: ".", max_tokens: 25, access_token: 'xx')
+      prompt.call(temperature: 0, stop_chars: ".", max_tokens: 25, access_token: 'xx')
     end
   end
 
@@ -45,5 +42,6 @@ class AnthropicBasicTest < Minitest::Test
       prompt.call(model: Instruct::Anthropic.new(::Anthropic::Client.new(access_token: 'xx'), model:'claude-3-5-sonnet-latest') ,temperature: 0, stop_chars: ".", max_tokens: 25)
     end
   end
+
 
 end

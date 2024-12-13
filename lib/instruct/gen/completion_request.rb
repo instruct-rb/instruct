@@ -16,7 +16,7 @@ class Instruct::Gen
     def execute(model)
       # TODO: this logic can probably move onto the model
       if model.respond_to?(:middleware_chain)
-        model = model.middleware_chain
+        model = model.middleware_chain(self)
       end
       model.execute(self)
     end

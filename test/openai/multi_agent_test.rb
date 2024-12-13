@@ -20,6 +20,7 @@ class OpenAIMultiAgentTest < Minitest::Test
     # We start a dynamic Q&A loop with the interviewer by kicking off the
     # interviewing agent and capturing the response under the :reply key.
     interviewer << p{"\nuser: __Noel sits down in front of you.__"} + gen.capture(:reply) + "\n".prompt_safe
+    puts interviewer.to_s
 
     puts interviewer.captured(:reply) # => "Hello Noel, how are you today?"
 

@@ -1,4 +1,4 @@
-module Instruct::OpenAI
+class Instruct::OpenAI
   class ChatCompletionResponse < Instruct::Gen::CompletionResponse
 
     def call(chunk)
