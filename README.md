@@ -299,6 +299,23 @@ different ways.
 
 ```
 
+## Logging Setup
+`Instruct.error_logger` and `Instruct.logger` can be set to any ruby `Logger`
+class. By default they are configured to log warn and error messages. Set the `INSTRUCT_LOG_LEVEL`
+environment variable to `debug`, `info`, `warn`, `error`, `fatal`, `unknown` to change the
+the log level, or change the log level directly on the logger instance.
+
+```ruby
+# logs errors and warnings to STDERR by default, by default all warnings and
+# errors are logged
+Instruct.err_logger.sev_threshold = :warn
+
+# logs all debug and info messages to STDOUT, by default nothing is logged as
+# the default is warn.
+Instruct.logger.sev_threshold = :warn
+```
+
+
 ## What's missing
 This gem is still in development and is missing many features before a 1.0,
 please feel free to get in touch if you would like to contribute or have any
