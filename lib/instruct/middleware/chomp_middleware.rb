@@ -26,7 +26,12 @@ module Instruct
       # TODO: maybe we work out a way to pause the stream from
       # hitting upstream handles until it feels good about it
       trimming_whitespace = true
+      unhidden = false
       req.add_stream_handler do |ts, chunk|
+        if range.size.positive? && !unhidden
+          req.transcript.unhide_range_from_prompt(range, by: self.class)
+          unhidden = true
+        end
         next ts if !trimming_whitespace
         next false if ts.length < whitespace.length && whitespace.start_with?(ts.to_s)
         # this will stop all upstream handlers, generally not a great idea, but
@@ -34,7 +39,6 @@ module Instruct
         if ts.length >= whitespace.length
           trimming_whitespace = false
           if ts.start_with?(whitespace)
-            req.transcript.unhide_range_from_prompt(range, by: self.class)
             ts[...whitespace.length] = ''
             next false if ts.empty?
           end
