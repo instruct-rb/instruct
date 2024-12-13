@@ -58,10 +58,12 @@ Instruct supports the ruby-openai gem and anthropic out of the box, simply inclu
 either or both gems in your Gemfile.
 
 ```ruby
-  gem 'ruby-openai'
-  gem 'anthropic'
+  gem "ruby-openai"
+  gem "anthropic"
 ```
 
+For more info on setting up the OpenAI or Anthropic clients, see the docs for
+[OpenAI](docs/openai-setup.md) and [Anthropic](docs/anthropic-setup.md).
 
 ## Usage
 

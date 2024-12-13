@@ -3,7 +3,7 @@
 Add this line to your application's Gemfile:
 
 ```ruby
-  gem 'anthropic'
+  gem "anthropic"
 ```
 
 If you would like to override the default anthropic client configuration

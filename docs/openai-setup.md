@@ -3,7 +3,7 @@
 Add this line to your application's Gemfile:
 
 ```ruby
-  gem 'ruby-openai'
+  gem "ruby-openai"
 ```
 
 If you would like to override the default OpenAI client configuration
