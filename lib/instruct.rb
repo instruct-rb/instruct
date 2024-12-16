@@ -69,3 +69,5 @@ if defined? ::Anthropic
   Instruct.anthropic_loaded = true
 else
 end
+
+require "instruct/railtie" if defined?(Rails::Railtie)

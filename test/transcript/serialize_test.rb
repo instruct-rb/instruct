@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TranscriptSerializeTest < MiddlewareTest
+class TranscriptSerializeTest < Minitest::Test
   include Instruct::Helpers
   using Instruct::Refinements
 

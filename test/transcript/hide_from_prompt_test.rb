@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TranscriptHideFromPromptTest < MiddlewareTest
+class TranscriptHideFromPromptTest < Minitest::Test
   include Instruct::Helpers
   using Instruct::Refinements
 
