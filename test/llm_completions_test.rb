@@ -114,6 +114,14 @@ class LLMCompletionsTest < Minitest::Test
     @mock.verify
   end
 
+  def test_p_helpers
+    some_context = "test"
+    prompt = p.system{"s <%= some_context %>"}
+    prompt << p.user{"u <%= some_context %>"}
+    prompt << p.assistant{"a <%= some_context %>"}
+    assert_equal "\nsystem: s test\nuser: u test\nassistant: a test", prompt.to_s
+  end
+
   def test_conversation_example
     @mock.expect_completion(nil, "hello")
     7.times do |i|

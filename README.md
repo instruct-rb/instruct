@@ -172,7 +172,16 @@ with these APIs.
   #     assistant: le capital de l'Australie est Canberra"
 ```
 
-### The P(rompt) Block ERB Helper
+If you want to be more explicit about the roles in the transcript, this can be
+achived by using the `#p.system`, `#p.user`, and `#p.assistant` helper methods.
+```ruby
+  # identitical to above, the helpers just prepend the "\n#{role_prefix}: " for you.
+  transcript = p.system{"You're an expert geographer that speaks only French"}
+  transcript += p.user{"What is the capital of Australia?"}
+  transcript += gen(prompt, stop_chars: "\n ,;.", model: 'gpt-4o')
+```
+
+### The p(rompt) Block ERB Helper
 
 `#p{}` (shown above) allows for dynamic prompt templating using ERB tags
 `<%= %>` with automatic handling of safe and unsafe content similar to HTML
@@ -214,22 +223,22 @@ interactions between two different agents.
 
 ```ruby
   # Create two agents: Noel Gallagher and an interviewer with a system prompt.
-  noel = p{"system: You're Noel Gallagher. Answer questions from an interviewer."}
-  interviewer = p{"system: You're a skilled interviewer asking Noel Gallagher questions."}
+  noel = p.system{"You're Noel Gallagher. Answer questions from an interviewer."}
+  interviewer = p.system{"You're a skilled interviewer asking Noel Gallagher questions."}
 
   # We start a dynamic Q&A loop with the interviewer by kicking off the
   # interviewing agent and capturing the response under the :reply key.
-  interviewer << p{"user: __Noel sits down in front of you.__"} + gen.capture(:reply) + "\n".prompt_safe
+  interviewer << p.user{"__Noel sits down in front of you.__"} + gen.capture(:reply)
 
   puts interviewer.captured(:reply) # => "Hello Noel, how are you today?"
 
   5.times do
     # Noel is sent the last value captured in the interviewer's transcript under the :reply key.
     # Similarly, we generate a response for Noel and capture it under the :reply key.
-    noel << p{"user: <%= interviewer.captured(:reply) %>"} + gen.capture(:reply, list: :replies) + "\n".prompt_safe
+    noel << p.user{"<%= interviewer.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
 
     # Noel's captured reply is now sent to the interviewer, who captures it in the same way.
-    interviewer << p{"user: <%=  noel.captured(:reply) %>"} + gen.capture(:reply, list: :replies) + "\n".prompt_safe
+    interviewer << p.user{"<%=  noel.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
   end
 
   # After the conversation, we can access the list captured replies from both agents
