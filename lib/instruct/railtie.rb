@@ -2,6 +2,9 @@ require "rails"
 
 module Instruct::Rails
   class Railtie < Rails::Railtie
+    initializer "instruct.active_record_serializers" do
+      require_relative "rails/active_record_coders"
+    end
     initializer "instruct.active_job.custom_serializers" do
       require_relative "rails/active_job_object_serializer"
       config.after_initialize do
