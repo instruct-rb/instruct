@@ -31,12 +31,12 @@ module Instruct
 
     # Expose methods and variables to the ERB template
     def method_missing(name, *args, &block)
-      if @binding.local_variables.include?(name)
-        @binding.local_variable_get(name)
-      elsif @output && name == :transcript
+      if @output && name == :transcript
         @output
+      elsif @binding.local_variables.include?(name)
+        @binding.local_variable_get(name)
       else
-        super
+        @binding.eval(name.to_s)
       end
     end
 

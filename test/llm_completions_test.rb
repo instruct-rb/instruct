@@ -139,4 +139,19 @@ class LLMCompletionsTest < Minitest::Test
 
   end
 
+  class ERBTestClass
+    include Instruct::Helpers::ERBHelper
+    def test_method
+      "test"
+    end
+    def create_prompt
+      p{"user: <%= test_method %>"}
+    end
+  end
+
+  def test_erb_helper_accesses_methods
+    erb = ERBTestClass.new
+    assert_equal "user: test", erb.create_prompt
+  end
+
 end
