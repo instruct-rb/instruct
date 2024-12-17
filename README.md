@@ -22,21 +22,25 @@ doesn't abstract away control.
 * **Natural and Intuitive API**
   Using LLMs with instruct is not too different from plain old string
   manipulation. This lets you think about your prompts and completions in a way
-  that naturally makes sense to most programmers.
-* **Dynamic Safe Prompting**
-  The ERB prompt helper can be used to generate prompts with dynamic input in an
+  that intuitively makes sense to most programmers.
+* **Safe Prompting**
+  The ERB `#p{}`rompt helper can be used to generate prompts with dynamic input in an
   familiar way. Dynamic input is automatically marked as unsafe and can be
   handled differently by middleware (for example to check for prompt
-  injections).
+  injections). Use `.prompt_safe` to mark part of the transcript as safe.
 * **Flexible Middleware Stack**
   Middleware can be used to add features like structured output, conversation
   pruning, RAG integrations, retries, auto-continuation, guard-rails, monitoring
   and more. The middleware stack provides a common way to transform a prompt for
   different LLM models with different capabilities.
- * **Streaming Support**
+* **Streaming Support**
   Both middleware and callers can process completion responses as the chunks
   arrive. This can be used to display a transcript in real time, or to validate
-  the output of an LLM call as it's being generated.
+  or parse the output of an LLM call as it's being generated.
+* **Rails Integration**
+  Prompts, completions and models can be serialized and stored on ActiveRecord
+  with custom attributes and will automatically serialize when passed to an
+  ActiveJob. Enabling easy background processing of LLM calls.
 
 ## Installation
 
@@ -155,7 +159,7 @@ with these APIs.
   # followed by a colon and then a space.
   transcript = p{"
     system: You're an expert geographer that speaks only French
-    user: What is the capital of France?
+    user: What is the capital of Australia?
   "} + gen(prompt, stop_chars: "\n ,;.", model: 'gpt-4o')
 
 
@@ -168,7 +172,7 @@ with these APIs.
   # to be appended immediately after.
   puts transcript + completion
   # => "system: You're an expert geographer that speaks only French
-  #     user: What is the capital of France?
+  #     user: What is the capital of Australia?
   #     assistant: le capital de l'Australie est Canberra"
 ```
 
@@ -363,7 +367,7 @@ ideas.
   - [ ] Batch APIs
   - [ ] Improve attributed string API with a visitor style presenter
     - [ ] Update middleware and printers to use the new presenters
-  - [ ] Serialization of transcripts (Consider migrations / upgrades) for storage
-    - [ ] Register ActiveJob serializer for transcripts so that they can be added to the job queue
+  - [x] Serialization of transcripts (Consider migrations / upgrades) for storage
+    - [x] Register ActiveJob serializer for transcripts so that they can be added to the job queue
     - [ ] Register ActiveRecord serializer for transcripts so that they can be stored in the database
   - [x] `stop_chars` and `stop`
