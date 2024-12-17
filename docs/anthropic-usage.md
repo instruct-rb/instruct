@@ -113,11 +113,17 @@ gen call.
   "The capital of france is " + gen(model: model, beta: 'beta1')
 ```
 
+Note that models instantiated with client directly cannot be serialized. This
+applies to gen calls in a transcript which hold a handle to the model. Instead
+you will need to save the transcript without a deferred gen call and add it in
+the background job or at the calling location.
+
 ## Beta option
-Instruct sets the `anthropic-beta` headers on the anthropic client
-if the beta: option is set. This option will raise an ArgumentError if the
-model was instantiated with a client. If you use a client to create a model
-you will need to set the headers on the client yourself.
+Instruct sets the `anthropic-beta` headers on the anthropic client if the beta:
+option is set in a gen call or model instantiation. This option will raise an
+ArgumentError if the model was instantiated with a ::Anthropic::Client. If you
+use a client to create a model you will need to set the headers on the client
+yourself.
 ``` ruby
   # Used when creating a model explicitly
   model = Instruct::Anthropic.new('claude-3-5-sonnet-latest', beta: ["beta1", "beta2"])
