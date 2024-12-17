@@ -67,7 +67,7 @@ one or both gems in your Gemfile.
 ```
 
 For more info on setting up the OpenAI or Anthropic clients, see the docs for
-[OpenAI](docs/openai-usage.md) and [Anthropic](docs/anthropic-usage.md).
+[OpenAI Usage](docs/openai-usage.md) and [Anthropic Usage](docs/anthropic-usage.md).
 
 ## Usage
 
@@ -79,13 +79,14 @@ For more info on setting up the OpenAI or Anthropic clients, see the docs for
 
 Getting a single completion from an LLM is as simple as calling `gen` with a prompt.
 
-If the first argument is present, it will be used as the prompt for the LLM
-and the completion will be returned immediately.
+When a prompt is a present as the first argument the gen call immediately
+retrieves the completion from the LLM.
 
-The model can be set with the model keyword argument if no default model is
-set.
+The model can be set with the model keyword argument if no default model has been
+set. Similarly all arguments that `ruby-openai` and `anthropic` can be configured with
+can be passed into the gen call.
 ```ruby
-completion = gen("The capital of France is ", stop_chars: "\n ,.")
+completion = gen("The capital of France is ", stop_chars: "\n ,.", model: 'gpt-3-5-turbo-instruct')
 
 puts completion # => "Paris"
 ```
@@ -136,8 +137,10 @@ deferred completions and append them to the transcript.
 
 ### Capturing Generated Completion
 
-`capture` captures the result of a completion from a deferred
-generation and makes it accessible from the transcript with `captured`.
+Because it's quite common to want to access a completion, but not break apart
+the prompt and completion into separate components, instruct provides `capture`
+captures the result of a completion from a deferred generation and makes it
+accessible from the transcript with `captured`.
 
 ```ruby
   transcript = Instruct::Transcript.new
@@ -176,8 +179,9 @@ with these APIs.
   #     assistant: le capital de l'Australie est Canberra"
 ```
 
-If you want to be more explicit about the roles in the transcript, this can be
-achived by using the `#p.system`, `#p.user`, and `#p.assistant` helper methods.
+If you want to be more explicit about adding roles in the transcript, instruct provides
+`#p.system`, `#p.user`, and `#p.assistant` helper methods.
+
 ```ruby
   # identitical to above, the helpers just prepend the "\n#{role_prefix}: " for you.
   transcript = p.system{"You're an expert geographer that speaks only French"}
