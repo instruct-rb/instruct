@@ -12,7 +12,7 @@ options, you can set them in an initializer .
 ```ruby
 # config/initializers/openai.rb - example rails initializer
 OpenAI.configure do |config|
-  config.access_token = Rails.application.credentials.anthropic[:access_token]
+  config.access_token = Rails.application.credentials.openai[:access_token]
 
   # As of 2024-12-13 you can set the following client configuration options:
   # config.api_type
