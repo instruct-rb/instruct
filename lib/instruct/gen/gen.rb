@@ -4,6 +4,7 @@ module Instruct
    set_instruct_class_id 2
 
    attr_accessor :transcript, :model, :kwargs
+   attr_accessor :capture_key, :capture_list_key
    attr_reader :results
    def initialize(transcript:, model:, **kwargs)
      @transcript = transcript
@@ -37,45 +38,19 @@ module Instruct
    # @param model this is a model object or the name of a model.
    # @param client_opts: this is an optional hash of options to pass to the API client when initializing a client model with a string
    # @block streaming_block: this is an optional block that will be called with each chunk of the response when the response is streamed
-   def call(model: nil, **kwargs, &streaming_block)
-     kwargs = @kwargs.merge(kwargs)
+   def call(model: nil, **calling_kwargs, &streaming_block)
+
+     env = @kwargs.merge(calling_kwargs)
+
      model ||= @model || Instruct.default_model
-     model = Instruct::Model.from_string(model, **kwargs) if model.is_a?(String)
-     kwargs = model.default_request_env.merge(kwargs)
+     model = Instruct::Model.from_string(model, **env) if model.is_a?(String)
 
-     completion = Transcript::Completion.new(duped_transcript: @transcript.dup)
-     transcript = transcript_without_gen_attachment
-     request = Gen::CompletionRequest.new(transcript, completion, **kwargs)
-     if streaming_block
-      request.add_stream_handler do |response|
-        set_updated_transcript_on_completion(response, request.transcript)
-        set_capture_keys_on_completion(response)
-        streaming_block.call(response)
-      end
-     end
-     response = request.execute(model)
-     completion_string = response.attributed_string
-     set_updated_transcript_on_completion(completion_string, request.transcript)
-     set_capture_keys_on_completion(completion_string)
-     @results << completion_string
-     completion_string
+     generate_completion = Instruct::GenerateCompletion.new(transcript:, model:, capture_key:, capture_list_key:, streaming_block:, env: )
+     completion = generate_completion.call(calling_gen: self)
+     @results << completion
+     completion
    end
 
-   def transcript_without_gen_attachment
-     if @transcript.attachment_at(@transcript.length - 1) == self
-       @transcript[...-1]
-     else
-       @transcript.dup
-     end
-   end
-
-   def set_updated_transcript_on_completion(completion, transcript)
-     completion.send(:updated_transcript=, transcript.dup)
-   end
-
-   def set_capture_keys_on_completion(completion)
-     completion.send(:captured=, @capture_key, @capture_list_key)
-   end
 
    def to_s
      if @result.nil?
