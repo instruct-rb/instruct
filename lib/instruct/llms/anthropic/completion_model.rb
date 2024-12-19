@@ -26,12 +26,6 @@ module Instruct
       set_access_token_from_env_if_needed
     end
 
-    # TODO: serialize whats needed or raise error
-    # alias_method :old_encode_with, :encode_with
-    # def encode_with(coder)
-    #
-    # end
-
     def middleware_chain(req)
       @middleware_chain ||= Instruct::MiddlewareChain.new(middlewares: (@middlewares || []) << self)
     end

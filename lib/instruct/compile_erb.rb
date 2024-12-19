@@ -1,15 +1,10 @@
 module Instruct
+  # Compiles an ERB template to a Transcript with the given binding.
+  #
+  # This class hould not have any methods that are not exposed to the ERB
+  # otherwise they will be called by the ERB template instead of local vars or
+  # bound eval'd vars.
   class CompileERB
-    # TODO: consider including the following refinements as they might be able to be used within the erb block
-    # needs tests before including
-    #
-    # using AttributedString::Refinements
-    # using Instruct::Refinements
-    # include Instruct::Helpers::GenHelper
-
-    # This class needs to only have methods that are used within the ERB
-    # scope as otherwise they will be called by the ERB template instead
-    # of local vars.
     def initialize(template:, _binding:)
       @binding = _binding
       @_erbout = Transcript.new
