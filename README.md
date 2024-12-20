@@ -46,36 +46,6 @@ I'm making this public to get feedback and to see if there is any interest in
 from the community to help develop this further.
 
 ---
-
-## Installation
-
-This gem won't be published again to RubyGems until it's more stable. For now, you
-should add these lines to your application's Gemfile to experiment with Instruct:
-
-```ruby
-  gem "instruct", github: "instruct-rb/instruct", branch: "development"
-  gem "attributed-string", github: "instruct-rb/attributed-string", branch: "main"
-```
-
-Include the helpers and refinements in the modules or classes where you want to
-use Instruct.
-
-```ruby
-  include Instruct::Helpers
-  using Instruct::Refinements
-```
-
-Instruct supports the ruby-openai gem and anthropic out of the box, simply include the
-one or both gems in your Gemfile.
-
-```ruby
-  gem "ruby-openai"
-  gem "anthropic"
-```
-
-For more info on setting up the OpenAI or Anthropic clients, see the docs for
-[OpenAI Usage](docs/openai-usage.md) and [Anthropic Usage](docs/anthropic-usage.md).
-
 ## Usage
 
 ### The gen function
@@ -333,7 +303,36 @@ different ways.
   # cases the completion is added to the end of the prompt.
 ```
 
-## Logging Setup
+## Installation
+
+This gem won't be published again to RubyGems until it's more stable. For now, you
+should add these lines to your application's Gemfile to experiment with Instruct:
+
+```ruby
+  gem "instruct", github: "instruct-rb/instruct", branch: "development"
+  gem "attributed-string", github: "instruct-rb/attributed-string", branch: "main"
+```
+
+Include the helpers and refinements in the modules or classes where you want to
+use Instruct.
+
+```ruby
+  include Instruct::Helpers
+  using Instruct::Refinements
+```
+
+Instruct supports the ruby-openai gem and anthropic out of the box, simply include the
+one or both gems in your Gemfile.
+
+```ruby
+  gem "ruby-openai"
+  gem "anthropic"
+```
+
+For more info on setting up the OpenAI or Anthropic clients, see the docs for
+[OpenAI Usage](docs/openai-usage.md) and [Anthropic Usage](docs/anthropic-usage.md).
+
+### Logging Setup
 `Instruct.error_logger` and `Instruct.logger` can be set to any ruby `Logger`
 class. By default they are configured to log warn and error messages. Set the `INSTRUCT_LOG_LEVEL`
 environment variable to `debug`, `info`, `warn`, `error`, `fatal`, `unknown` to change the
