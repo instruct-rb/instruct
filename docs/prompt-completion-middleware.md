@@ -6,14 +6,14 @@
 # Prompt Completion Middleware
 
 The prompt completion middleware stack lets you modify and transform the
-{Instruct::LM lm}'s {Instruct::Transcript transcript} before sending it to a large
+{Instruct::LM lm}'s {Instruct::Prompt prompt} before sending it to a large
 language model for completion. This is helpful for various tasks like adding
 context, filtering out unwanted details, transforming the format, supporting new
 model features, and more.
 
-When a {Instruct::Gen::CompletionRequest completion request} is made, the
-current {Instruct::Transcript transcript} is used as the prompt. The middleware
-stack then transforms and modifies the {Instruct::Transcript transcript},
+When a {Instruct::Gen::CompletionRequest completion request} is made,
+a middleware stack is made from the model, the stack
+stack then transforms and modifies the {Instruct::Prompt prompt},
 preparing it for the completion call. This setup allows for middleware such as
 conversational pruning, which limits context to the last few relevant messages.
 
@@ -35,17 +35,18 @@ The middleware chain runs in the order that it is added to the {Instruct::LM lm}
 item in the chain is usually the model itself.
 
 The returned response must be an {Instruct::Gen::CompletionResponse} object.
-which will be added to the transcript.
+which will be added to the prompt.
 
-The middleware can used to modify the transcript, however, these modifications
+The middleware can used to modify the propmt , however, these modifications
 will persist between lm calls, so it's important to understand the
-implications of modifying the transcript (especially if different models with
+implications of modifying the prompt (especially if different models with
 different APIs are used).
 
-Preferably, the middleware does not modify the transcript (beyond perhaps adding or changing
+# TODO: not true anymore
+Preferably, the middleware does not modify the prompt (beyond perhaps adding or changing
 attributes it manages). # TODO: consider freezing the string but not the attributes
 
-To transform the transcript, the middleware should either implement a transform_prompt method
+To transform the prompt , the middleware should either implement a transform_prompt method
 or register a transform block on the request.
 
 # Prompt Transform blocks
@@ -57,7 +58,7 @@ The middleware stack
 
 # Prompt Safe
 
-Prompt safe allows the transcript to keep track of whether the content
+Prompt safe allows the prompt to keep track of whether bits of its content
 came from a trusted source (i.e. the developer) or is unsafe and came
 from an outside source (i.e. the user or llm). This is important for
 information for pipeline middleware that may need to make decisions based
@@ -73,6 +74,7 @@ The prompt safe variable is set by expressions added to the lm.
 By default for {Instruct::LM#f} the string content in the erb template is marked as safe, but all templated
 variables are marked as unsafe.
 
+# TODO: out of date
 ```ruby
  lm += lm.f{"this would be marked safe by default #{as_would_this} <%= but_this_would not %>"}
  # lm.transcript contains something semantically like, although the actual format is different

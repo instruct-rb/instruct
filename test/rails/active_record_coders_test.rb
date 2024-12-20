@@ -5,10 +5,10 @@ class RailsActiveJobObjectSerializerTest < Minitest::Test
   include Instruct::Helpers
   using Instruct::Refinements
 
-  def test_can_dump_and_load_transcript
-    transcript = Instruct::Transcript.new("Hello World") + gen
-    obj = Instruct::Transcript.load(Instruct::Transcript.dump(transcript))
-    assert_equal transcript, obj
+  def test_can_dump_and_load_prompt
+    prompt = Instruct::Prompt.new("Hello World") + gen
+    obj = Instruct::Prompt.load(Instruct::Prompt.dump(prompt))
+    assert_equal prompt, obj
     skip "needs documentation"
   end
 

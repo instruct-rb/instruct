@@ -114,8 +114,8 @@ gen call.
 ```
 
 Note that models instantiated with client directly cannot be serialized. This
-applies to gen calls in a transcript which hold a handle to the model. Instead
-you will need to save the transcript without a deferred gen call and add it in
+applies to gen calls in a prompt which hold a handle to the model. Instead
+you will need to save the prompt  without a deferred gen call and add it in
 the background job or at the calling location.
 
 ## Beta option

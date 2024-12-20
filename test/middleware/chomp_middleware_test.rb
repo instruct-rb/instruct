@@ -11,7 +11,7 @@ class ChompMiddlewareTest < Minitest::Test
 
   def test_that_a_prompt_is_chomped
     @mock.expect_completion("a prompt:", " a response")
-    prompt = Instruct::Transcript.new("a prompt: ") + gen()
+    prompt = Instruct::Prompt.new("a prompt: ") + gen()
     result = prompt.call
     assert_equal("a response", result.to_s)
     @mock.verify
@@ -21,14 +21,14 @@ class ChompMiddlewareTest < Minitest::Test
 
   def test_that_a_prompt_is_chomped_but_the_reponse_has_whitespace_added
     @mock.expect_completion("a prompt:", "a response")
-    prompt = Instruct::Transcript.new << "a prompt: " + gen()
+    prompt = Instruct::Prompt.new << "a prompt: " + gen()
     @mock.verify
     assert_equal "a prompt: a response", prompt.prompt_object.to_s
   end
 
   def test_that_it_stops_stream_handlers_when_chunked_whitespace
     @mock.expect_completion("a prompt:", [" ", " ", " a", " response"])
-    prompt = Instruct::Transcript.new("a prompt:   ") + gen()
+    prompt = Instruct::Prompt.new("a prompt:   ") + gen()
     expect = ["a", "a response"]
     result = prompt.call do |resp|
       assert_equal expect.shift, resp.to_s
@@ -56,7 +56,7 @@ class ChompMiddlewareTest < Minitest::Test
 
   def test_model_with_chomp_middleware_serializes
     @mock.expect_completion("a prompt:", " a response")
-    prompt = Instruct::Transcript.new("a prompt: ") + gen()
+    prompt = Instruct::Prompt.new("a prompt: ") + gen()
     prompt = Instruct::Serializer.load(Instruct::Serializer.dump(prompt))
     result = prompt.call
     mock = prompt.attachments.last.model

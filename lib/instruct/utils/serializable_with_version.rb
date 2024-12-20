@@ -41,8 +41,8 @@ module Instruct
       coder.tag = "!ruby/instruct:#{self.class.instruct_class_id}@#{self.class.instruct_class_version}"
       coder["data"] = instance_vars_to_hash
       # TODO: consider calling the old encode_with method if defined
-      # and then this special case can be moved to transcript
-      coder["str"] = self.to_s(gen: :nochange) if self.is_a? Transcript
+      # and then this special case can be moved to prompt
+      coder["str"] = self.to_s(gen: :nochange) if self.is_a? Prompt
       coder["str"] = self.to_s if coder["str"].nil? && self.is_a?(String)
     end
 

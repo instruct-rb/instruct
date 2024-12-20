@@ -1,20 +1,20 @@
 module Instruct
-  class Transcript < AttributedString
+  class Prompt < AttributedString
     include Instruct::Serializable
     set_instruct_class_id 1
 
 
     def call(**kwargs, &streaming_block)
-      raise ArgumentError, "cannot add transcript to call on transcript" if kwargs[:transcript]
+      raise ArgumentError, "cannot add prompt to call on prompt" if kwargs[:prompt]
 
-      prompt = Transcript.new
+      prompt = Prompt.new
 
       gens, substrings = split_substrings_and_gen_attachments
       results = []
 
       gens.each_with_index do |gen, i|
         prompt += substrings[i]
-        gen.transcript = prompt
+        gen.prompt = prompt
         completion = gen.call(**kwargs, &streaming_block)
         prompt += completion
         results << completion
@@ -29,22 +29,22 @@ module Instruct
     end
 
     # Unlike normal strings << is not the same as concat. << first performs the concat, then runs call on the
-    # new transcript, before adding the result to the transcript.
+    # new prompt, before adding the result to the prompt.
     def <<(other, *args, **kwargs)
       concat(other, *args, perform_call: true, apply_completions: true, **kwargs)
     end
 
     def safe_concat(string)
-      string = Transcript.new(string, safe: true) if string.is_a?(String)
+      string = Prompt.new(string, safe: true) if string.is_a?(String)
       concat(string)
     end
 
     def concat(other, *args, perform_call: false, apply_completions: false)
-      if other.is_a?(Array) && other.all? { |obj| obj.is_a?(Transcript::Completion) } && !other.empty?
+      if other.is_a?(Array) && other.all? { |obj| obj.is_a?(Prompt::Completion) } && !other.empty?
         return concat(*(other + args), perform_call:, apply_completions: )
       end
-      if other.is_a?(Transcript::Completion) && apply_completions
-        other.apply_to_transcript(self)
+      if other.is_a?(Prompt::Completion) && apply_completions
+        other.apply_to_prompt(self)
       else
         super(other)
       end
@@ -124,7 +124,7 @@ module Instruct
       if last_attachment.is_a?(Instruct::Gen)
         last_attachment.capture(key, **kwargs)
       else
-       raise ArgumentError, "Cannot capture on a transcript that does not end with a Gen"
+       raise ArgumentError, "Cannot capture on a prompt that does not end with a Gen"
       end
       self
     end
@@ -147,38 +147,38 @@ module Instruct
     end
 
 
-    # When a generated result is added to or concatted to a transcript, the
-    # transcript replaces its contents with modified transcript if
-    # the original transcript is the same as the transcript. This enables
-    # middleware to make modifications to the transcript that persist
-    # only when the result is added to the transcript. In all other cases,
-    # the transcript is not modified and the result is the normal result.
+    # When a generated result is added to or concatted to a prompt, the
+    # prompt replaces its contents with modified prompt if
+    # the original prompt is the same as the prompt. This enables
+    # middleware to make modifications to the prompt that persist
+    # only when the result is added to the prompt. In all other cases,
+    # the prompt is not modified and the result is the normal result.
     class Completion < AttributedString
       include Instruct::Serializable
       set_instruct_class_id 3
       attr_reader :prompt
 
-      def apply_to_transcript(transcript)
-        deferred_gens = transcript.attachments_with_positions.filter { |obj| obj[:attachment].is_a?(Instruct::Gen) }
+      def apply_to_prompt(prompt_for_update)
+        deferred_gens = prompt_for_update.attachments_with_positions.filter { |obj| obj[:attachment].is_a?(Instruct::Gen) }
         first_gen = deferred_gens.first
         if first_gen.nil?
-          return transcript.replace(transcript.+(self, apply_completions: false))
+          return prompt_for_update.replace(prompt_for_update.+(self, apply_completions: false))
         end
-        # if the transcript matches the prompt, we replace the transcript with the updated transcript
-        # otherwise we just append the updated transcript to the transcript
+        # if the prompt_for_update matches the prompt, we replace the prompt_for_update with the updated prompt_for_update
+        # otherwise we just append the updated prompt_for_update to the prompt_for_update
         # in both cases we remove the gen attachment
-        if (first_gen && transcript[..first_gen[:position]] == prompt) || (first_gen.nil? && transcript == prompt)
-          transcript.send(:add_captured, self, @key, @list_key)
-          transcript[..first_gen[:position]] = @updated_transcript.+(self, apply_completions: false)
+        if (first_gen && prompt_for_update[..first_gen[:position]] == prompt) || (first_gen.nil? && prompt_for_update == prompt)
+          prompt_for_update.send(:add_captured, self, @key, @list_key)
+          prompt_for_update[..first_gen[:position]] = @updated_prompt.+(self, apply_completions: false)
         else
-          transcript[first_gen[:position]] = self
+          prompt_for_update[first_gen[:position]] = self
         end
-        transcript
+        prompt_for_update
       end
 
       def +(other)
-        return super unless other.is_a?(Transcript)
-        Transcript.new + self + other
+        return super unless other.is_a?(Prompt)
+        Prompt.new + self + other
       end
 
       # Returns the latest chunk in the completion unless a chunk argument is provided
@@ -188,9 +188,9 @@ module Instruct
         ranges.map { |range| self[range] }.join
       end
 
-      def _prepare_for_return(prompt:, updated_transcript:, captured_key:, captured_list_key:)
+      def _prepare_for_return(prompt:, updated_prompt:, captured_key:, captured_list_key:)
         @prompt = prompt
-        @updated_transcript = updated_transcript
+        @updated_prompt = updated_prompt
         @key = captured_key
         @list_key = captured_list_key
       end
@@ -198,14 +198,11 @@ module Instruct
 
       private
 
-      def first_gen(transcript)
+      def first_gen(prompt)
         return nil if deferred_gens.empty?
         deferred_gens
       end
 
-      def updated_transcript=(duped_transcript)
-        @updated_transcript = duped_transcript
-      end
 
       def captured=(key, list_key)
         @key, @list_key = key, list_key

@@ -27,7 +27,7 @@ doesn't abstract away control.
   The ERB `#p{}`rompt helper can be used to generate prompts with dynamic input in an
   familiar way. Dynamic input is automatically marked as unsafe and can be
   handled differently by middleware (for example to check for prompt
-  injections). Use `.prompt_safe` to mark part of the transcript as safe.
+  injections). Use `.prompt_safe` to mark part of the prompt as safe.
 * **Flexible Middleware Stack**
   Middleware can be used to add features like structured output, conversation
   pruning, RAG integrations, retries, auto-continuation, guard-rails, monitoring
@@ -35,7 +35,7 @@ doesn't abstract away control.
   different LLM models with different capabilities.
 * **Streaming Support**
   Both middleware and callers can process completion responses as the chunks
-  arrive. This can be used to display a transcript in real time, or to validate
+  arrive. This can be used to display a completion in real time, or to validate
   or parse the output of an LLM call as it's being generated.
 * **Rails Integration**
   Prompts, completions and models can be serialized and stored on ActiveRecord
@@ -109,30 +109,30 @@ prompts that can be called multiple times or passed around as an argument.
 
   puts completion # => "Paris"
 
-  # When a completion is added to the transcript that generated it, a new
-  # transcript is created with the completion replacing the deferred completion.
+  # When a completion is added to the prompt that generated it, a new
+  # prompt is created with the completion replacing the deferred completion.
   puts prompt + completion # => "The capital of France is Paris!"
 
   # Note the exclamation mark is still present and comes after the completion.
 ```
 
-### Appending to an existing transcript
+### Appending to an existing prompt
 
 The double angle bracket operator `<<` can be used to quickly append objects
-to a transcript. This can be used to modify and build up a transcript in place.
+to a prompt. This can be used to modify and build up a prompt in place.
 
 Unlike the `+=` and `concat` operators, the `<<` operator will immediately call any
-deferred completions and append them to the transcript.
+deferred completions and append them to the prompt.
 
 ```ruby
-  transcript = Instruct::Transcript.new
-  transcript << "The capital of France is "
-  transcript << gen(stop_chars: "\n ,;.") + "!"
+  string = Instruct::Prompt.new
+  string << "The capital of France is "
+  string << gen(stop_chars: "\n ,;.") + "!"
 
-  puts transcript # => "The capital of France is Paris!"
+  puts string # => "The capital of France is Paris!"
 
-  transcript << " It is widely known for " + gen(stop_chars: ".") + "."
-  puts transcript # => "The capital of France is Paris! It is widely known for its fashion, art and culture."
+  string << " It is widely known for " + gen(stop_chars: ".") + "."
+  puts string # => "The capital of France is Paris! It is widely known for its fashion, art and culture."
 ```
 
 ### Capturing Generated Completion
@@ -140,25 +140,24 @@ deferred completions and append them to the transcript.
 Because it's quite common to want to access a completion, but not break apart
 the prompt and completion into separate components, instruct provides `capture`
 captures the result of a completion from a deferred generation and makes it
-accessible from the transcript with `captured`.
+accessible from the prompt with `captured`.
 
 ```ruby
-  transcript = Instruct::Transcript.new
-  transcript << "The capital of France is " + gen(stop: '\n','.').capture(:capital)
+  string = Instruct::Prompt.new
+  string << "The capital of France is " + gen(stop: '\n','.').capture(:capital)
 
-  puts transcript.captured(:capital) # => "Paris"
+  puts string.captured(:capital) # => "Paris"
 ```
 
 Passing a `list: :key` keyword argument will capture an array of completions under the same key.
 
-### Adding Roles to a Transcript
+### Adding Roles to a Prompt
 
 Most modern LLMs are designed for conversational style completions. The chat
-completion middleware transforms the transcript into an object that can be used
-with these APIs.
-
+completion middleware transforms a transcript prompt into an object that can be
+used with these APIs.
 ```ruby
-  # Roles can be added to the transcript by a new line with the role name
+  # Roles can be added to the prompt by a new line with the role name
   # followed by a colon and then a space.
   transcript = p{"
     system: You're an expert geographer that speaks only French
@@ -186,7 +185,7 @@ If you want to be more explicit about adding roles in the transcript, instruct p
   # identitical to above, the helpers just prepend the "\n#{role_prefix}: " for you.
   transcript = p.system{"You're an expert geographer that speaks only French"}
   transcript += p.user{"What is the capital of Australia?"}
-  transcript += gen(prompt, stop_chars: "\n ,;.", model: 'gpt-4o')
+  transcript += gen(stop_chars: "\n ,;.", model: 'gpt-4o')
 ```
 
 ### The p(rompt) Block ERB Helper
@@ -208,7 +207,7 @@ shows how to use a chomped ERB heredoc to generate larger prompts with both
 "safe" and "unsafe" content.
 
 ```ruby
-  ts = p{<<~ERB.chomp
+  p = p{<<~ERB.chomp
       This is a longer prompt, if the included content might include
       injections  use the normal ERB tags like so: <%= unsafe_user_content %>.
 
@@ -217,7 +216,7 @@ shows how to use a chomped ERB heredoc to generate larger prompts with both
       some_safe_content.prompt_safe %>.
 
       By default generated LLM responses as <%= gen %> or #{ gen } will be added
-      to the transcript as unsafe. To add it as safe we cannot use the ERB
+      to the prompt as unsafe. To add it as safe we cannot use the ERB
       method, we instead need to call .prompt_safe on the completion befored
       appending it.
     ERB
@@ -257,20 +256,20 @@ interactions between two different agents.
   # => "noel: ... \n\n interviewer: ..., ..."
 ```
 
-## The Transcript
-The following examples illustrate how the Transcript can be manipulated in
+## The Prompt
+The following examples illustrate how the Prompt can be manipulated in
 different ways.
 ``` ruby
-  Instruct::Transcript.new << "The capital of France is" + gen(stop: '\n','.')
+  Instruct::Prompt.new << "The capital of France is" + gen(stop: '\n','.')
   # => "The capital of France is Paris"
 
   prompt = "The capital of France is" + gen(stop: '\n','.')
   # => "The capital of France is 💬"
-  # Note that a transcript can just be created by adding a string and a gen
+  # Note that a prompt can just be created by adding a string and a gen
   # call. However, the gen call is deferred (as indicated by the 💬).
 
   prompt.class
-  # => Instruct::Transcript
+  # => Instruct::Prompt
 
   result = prompt.call do |response|
     # This optional block on the call method can be used for streaming
@@ -283,7 +282,7 @@ different ways.
   # => "Paris"
 
   result.class
-  # => Instruct::Transcript::Completion
+  # => Instruct::Prompt::Completion
 
   result.prompt
   # => "The capital of France is 💬"
@@ -294,13 +293,13 @@ different ways.
 
   together = prompt + result
   # => "The capital of France is Paris"
-  # Adding a result to a prompt will return the prompt with the result appended.
-  # If this result was for this same prompt, it will also update the prompts
-  # transcript with any additional changes that were made by middleware during
-  # the call that produced the result. This includes the capture of values.
+  # Adding a completion to a prompt will return the prompt with the completion appended.
+  # If this completion was generated using the same prompt, it will also update the prompts
+  # content with any additional changes that were made by middleware during
+  # the call that produced the completion. This includes the capture of values.
 
   together.class
-  # => Instruct::Transcript
+  # => Instruct::Prompt
 
   # This does nothing as there are no deferred calls.
   together.call
@@ -310,7 +309,7 @@ different ways.
   # => "The capital of Germany is 💬, which is in the region of 💬"
 
   result = prompt.call
-  # => [ "Berlin", "Europe" ] # Array<Instruct::Transcript::Completion>
+  # => [ "Berlin", "Europe" ] # Array<Instruct::Prompt::Completion>
 
   # The results are joined together with the prompt in the order they were returned.
   together = prompt + result
@@ -343,7 +342,7 @@ ideas.
 - Middleware
   - [ ] Constraint based validation with automatic retries
   - [ ] Improvments to chat completion middleware
-    - [ ] Allow role switching on the same line but then in the updated transcript fix it
+    - [ ] Allow role switching on the same line but then in the updated prompt fix it
     - [ ] New Conversation middleware with default to user with system kw arg or assistant kw arg (maybe its one and the same?)
   - [ ] Conversation management (prune long running conversations)
   - [ ] Async support (waiting on async support in ruby-openai). This enables
@@ -352,9 +351,9 @@ ideas.
     - [ ] Self healing
   - [ ] Guard-rails (middleware that checks for prompt injections/high perplexity)
   - [ ] Auto-continuation (middleware that adds prompts to continue a conversation)
-  - [ ] Support transform attachments in the transcript intos multi-modal input
+  - [ ] Support transform attachments in the prompt intos multi-modal input
   - [ ] Anthropic caching
-  - [ ] Visualize streaming transcript as a tree in web interface (dependent on forking)
+  - [ ] Visualize streaming prompt as a tree in web interface (dependent on forking)
   - [ ] Standardize finish reasons, and shared call arguments
 - Models
   - [x] OpenAI API model selection
@@ -371,7 +370,7 @@ ideas.
   - [ ] Batch APIs
   - [ ] Improve attributed string API with a visitor style presenter
     - [ ] Update middleware and printers to use the new presenters
-  - [x] Serialization of transcripts (Consider migrations / upgrades) for storage
-    - [x] Register ActiveJob serializer for transcripts so that they can be added to the job queue
-    - [ ] Register ActiveRecord serializer for transcripts so that they can be stored in the database
+  - [x] Serialization of prompts (Consider migrations / upgrades) for storage
+    - [x] Register ActiveJob serializer for prompts so that they can be added to the job queue
+    - [ ] Register ActiveRecord serializer for prompts so that they can be stored in the database
   - [x] `stop_chars` and `stop`

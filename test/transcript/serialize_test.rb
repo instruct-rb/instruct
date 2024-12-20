@@ -14,15 +14,15 @@ class TranscriptSerializeTest < Minitest::Test
     Instruct::Serializer.load(data)
   end
 
-  def test_transcript_serializes
-    obj = Instruct::Transcript.new("hello", test: "world")
+  def test_prompt_serializes
+    obj = Instruct::Prompt.new("hello", test: "world")
     loaded = dump_and_load(obj)
     assert_equal obj, loaded
   end
 
-  def test_transcript_with_result_serializes
+  def test_prompt_with_result_serializes
     @mock.expect_completion(nil, ["world"])
-    obj = Instruct::Transcript.new << "hello " + gen().capture(:x, list: :y)
+    obj = Instruct::Prompt.new << "hello " + gen().capture(:x, list: :y)
     loaded = dump_and_load(obj)
     assert_equal obj.captured(:x).to_s, "world"
     assert_equal obj.captured(:y).first.to_s, "world"
@@ -31,8 +31,8 @@ class TranscriptSerializeTest < Minitest::Test
     assert_equal loaded.captured(:y).first.to_s, "world"
   end
 
-  def test_transcript_with_gen_serializes
-    obj = Instruct::Transcript.new + "hello " + gen()
+  def test_prompt_with_gen_serializes
+    obj = Instruct::Prompt.new + "hello " + gen()
     loaded = dump_and_load(obj)
     assert_equal obj, loaded
   end

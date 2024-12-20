@@ -27,12 +27,12 @@ class Instruct::Gen
     end
 
     def chunk_processed
-      ts = response_buffer
+      completion = response_buffer
       @stream_handlers.each do |handler|
-         ts = handler.call(ts, @chunks)
-         break if ts == false
+         completion = handler.call(completion, @chunks)
+         break if completion == false
       end
-      @response_buffer = ts if ts.is_a? Instruct::Transcript::Completion
+      @response_buffer = completion if completion.is_a? Instruct::Prompt::Completion
       @chunks += 1
     end
 
@@ -55,7 +55,7 @@ class Instruct::Gen
 
 
     # @api private
-    # @return [Transcript] the buffer of text
+    # @return [Prompt] the buffer of text
     def response_buffer
       @response_buffer
     end

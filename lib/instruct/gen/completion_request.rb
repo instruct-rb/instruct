@@ -1,8 +1,8 @@
 class Instruct::Gen
   class CompletionRequest
-    def initialize(transcript:, completion:, env:)
+    def initialize(prompt:, completion:, env:)
       @env = env
-      @transcript = transcript
+      @prompt = prompt
       @completion = completion
       @prompt_transformers = []
       @stream_handlers = []
@@ -18,8 +18,8 @@ class Instruct::Gen
       @env
     end
 
-    def transcript
-      @transcript
+    def prompt
+      @prompt
     end
 
     def response_kwargs
@@ -27,7 +27,7 @@ class Instruct::Gen
     end
 
     def prompt_object
-      prompt_object = @transcript.prompt_object
+      prompt_object = @prompt.prompt_object
       @prompt_transformers.each do |transformer|
         prompt_object = transformer.call(prompt_object)
       end
@@ -47,7 +47,7 @@ class Instruct::Gen
     # The same logic will often be used in the middleware to check
     # the final response.
     # These are called in reverse order of addition.
-    # array containing [status, transcript_string]
+    # array containing [status, completion_string]
     def add_stream_handler(&block)
       @stream_handlers << block
     end

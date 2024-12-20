@@ -1,5 +1,5 @@
 module Instruct
-  # Converts transcript plain text entries into role-based conversation entries
+  # Converts prompt plain text entries into role-based conversation entries
   # See {file:docs/prompt-completion-middleware.md#label-Chat+Completion+Middleware}
   class ChatCompletionMiddleware
     include Instruct::Serializable
@@ -12,7 +12,7 @@ module Instruct
     def call(req, _next:)
       role_changes = []
 
-      control_str = req.transcript.filter do | attrs |
+      control_str = req.prompt.filter do | attrs |
         attrs[:safe] == true
       end
 
@@ -41,27 +41,27 @@ module Instruct
       role_changes.each do |change|
         if change[:control_start] > start_pos
           if role == :system
-            req.env[:system_from_prompt] = req.transcript[start_pos...change[:control_start]]
+            req.env[:system_from_prompt] = req.prompt[start_pos...change[:control_start]]
           end
-          req.transcript.add_attrs(start_pos...change[:control_start], role: role)
+          req.prompt.add_attrs(start_pos...change[:control_start], role: role)
         end
         start_pos = change[:control_finish] + 1
         role = change[:role]
       end
       if role == :system
-        req.env[:system_from_prompt] = req.transcript[start_pos...req.transcript.length]
+        req.env[:system_from_prompt] = req.prompt[start_pos...req.prompt.length]
       end
-      req.transcript.add_attrs(start_pos...req.transcript.length, role: role)
+      req.prompt.add_attrs(start_pos...req.prompt.length, role: role)
 
       req.add_prompt_transform do | attr_str |
         transform(attr_str)
       end
 
-      if req.transcript.attrs_at(req.transcript.length - 1)[:role] != :assistant && @roles.include?(:assistant)
-        req.transcript.safe_concat(Transcript.new("\nassistant: ", source: :chat_completion_middleware))
+      if req.prompt.attrs_at(req.prompt.length - 1)[:role] != :assistant && @roles.include?(:assistant)
+        req.prompt.safe_concat(Prompt.new("\nassistant: ", source: :chat_completion_middleware))
       end
 
-      # need to work out pos of each entry in text transcript
+      # need to work out pos of each entry in text prompt
       _next.call(req)
     end
 

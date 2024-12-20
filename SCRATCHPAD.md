@@ -40,14 +40,14 @@ NTS: How can different middlewares add their own stream handlers with potentiall
  name it'll be called?
 
  TODO: think about function calling, how do we handle it? Probably tools are passed into gen()
- but they can also be attached to the transcript. Similar to how model is selected.
+ but they can also be attached to the prompt. Similar to how model is selected.
 
  Possibly you can define tools at a class level by just adding them to the class
  ```ruby
   class X
     define_tool :name, :function # this will be on every gen call for this class
 
-    # this will be on all future gen calls for this transcript, unless the tool attachment is removed
+    # this will be on all future gen calls for this prompt, unless the tool attachment is removed
     ts += tool(:function_name)
 
     gen(tools, tools_erb:,)
@@ -73,7 +73,7 @@ NTS: THIS IS NOW NOT WORKING, but it could be made to work with a capture attach
       ts.call
       # [ "Paris", "beautiful" ]
     ```
-    What's unique about this is that the ERB block is evaluated both in the context of the current transcript
+    What's unique about this is that the ERB block is evaluated both in the context of the current prompt
     and the context of the block that it's in.
 
 
@@ -87,8 +87,8 @@ NTS: This syntax is a bit gross, maybe we can get rid of the new line requiremen
 
 
 
-```encoding / decoding transcript```
-The transcript can be encoded and decoded and to store it in a database
+```encoding / decoding prompts```
+The prompt can be encoded and decoded and to store it in a database
 (probably YAML as it supports cycles and can be migrated in advance of loading by editing string)
 
 CFG output (can be used with token filters – i.e. the gen call can pass to the
@@ -101,10 +101,10 @@ The CFG model works with the LLM stream, this allows it to retry/force the corre
 Structured output, this is a more complex way to capture output that can handle LLM errors more gracefuly reducing
 the need to retry the LLM call. NTS: it would be nice if structured output (BAML) could be built on top of CFG
 ```ruby
-# ts ... is a transcript of a conversation that is ongoing with a user
+# ts ... is a prompt of a conversation that is ongoing with a user
 ts += gen(model: 'gpt-3.5-turbo-instruct', stop: '\n','.').capture do |b|
   # this says that the structured output should be either 1,2 or 3 and that if it's 3 it will be marked as invalid_remove
-  # in the transcript
+  # in the  prompt
   b.switch(b.number(1),b.number(2),b.number(3).remove())
 end
 ts.structured_response_stream do |object|
@@ -112,12 +112,12 @@ ts.structured_response_stream do |object|
 end
 ```
 
-How can I do something where I can have transcript reasoning and then structured response, all without having to make
+How can I do something where I can have prompt reasoning and then structured response, all without having to make
 a second call to the model.
 ```
   structured_reponse = StructuredResponse.new(animal_sounds: '[]string')
   "some_prompt" + (structured_response + "give your reasoning before the structured response").finalized_single_use
-  NTS: if gen is called with a structured_response and it hasn't been put in the transcript already, then it adds
+  NTS: if gen is called with a structured_response and it hasn't been put in the prompt already, then it adds
   it's own single_use prompt to the end (unless explicitly told not to).
 ```
 
@@ -126,8 +126,8 @@ The two call method would be like
   reasoning = ("some_prompt that asked for reasoning i.e. CoT" + gen).call
   # this would drop the initial propmpt and just return the reasoning
 
-  # showing the other calling method (transcript added, it therefore doesn't defer)
-  gen(structured_response: structured_response, transcript: reasoning)
+  # showing the other calling method (prompt added, it therefore doesn't defer)
+  gen(structured_response: structured_response, prompt: reasoning)
   (reasoning + gen(structured_response: structured_response)).call
   # this would be a new deferred prompt that
 ```
@@ -211,7 +211,7 @@ Every call to a model can have a middleware stack applied to the request and res
 
 # Unimplemented Features (subject to change)
 
-## Transcript Mode Attributes
+## Prompt Mode Attributes
 
 The mode attributes can be applied to transcript text and model responses, they control
 the behaviour of the the transcript in generations and when processing responses (streaming or finalized).
@@ -331,7 +331,7 @@ user content
   - Why?
     - That way it could sit in the erb system and look at result of previous llm calls on the same prompt
     - That way function calls for CFGs could be created
-- [x] Transcript
+- [x] Prompt
   - [x] Make it an object
   - [ ] Consider stopping the safe being modified with attrs or by appending attributed strings
   - [ ] Calculate forked paths

@@ -11,7 +11,7 @@ class MockCompletionStreamResponse < Instruct::Gen::CompletionResponse
 
 
   attr_reader :stream_chunks
-  def initialize(text = nil, stream_chunks: nil, finish_reason: nil, completion: Instruct::Transcript::Completion.new(prompt: Instruct::Transcript.new), **kwargs)
+  def initialize(text = nil, stream_chunks: nil, finish_reason: nil, completion: Instruct::Prompt::Completion.new(prompt: Instruct::Prompt.new), **kwargs)
     if text.is_a?(Array)
       stream_chunks = text.map { |chunk| self.class.text_chunk(chunk) }
       stream_chunks.last[:finish_reason] = finish_reason || :stop

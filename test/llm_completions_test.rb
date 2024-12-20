@@ -15,9 +15,9 @@ class LLMCompletionsTest < Minitest::Test
     @mock.verify
 
     @mock.expect_completion("The capital of France is ", "Paris.")
-    ts = "The capital of France is "
-    result = gen(ts)
-    assert_equal "The capital of France is Paris.", (ts + result).to_s
+    prompt = "The capital of France is "
+    result = gen(prompt)
+    assert_equal "The capital of France is Paris.", (prompt + result).to_s
   end
 
   def test_perform_single_prompt_call
@@ -78,11 +78,11 @@ class LLMCompletionsTest < Minitest::Test
     @mock = MockCompletionModel.new(middlewares: [Instruct::ChatCompletionMiddleware])
     self.instruct_default_model = @mock
     @mock.expect_completion({ messages: [ { user: "The capital of France is".prompt_safe } ]}, "Paris")
-    ts = Instruct::Transcript.new
-    ts << p{"user: The capital of France is"} + gen.capture(:france) + "\n"
+    prompt = Instruct::Prompt.new
+    prompt << p{"user: The capital of France is"} + gen.capture(:france) + "\n"
     @mock.verify
-    assert_equal "Paris", ts.captured(:france).to_s
-    assert_equal "user: The capital of France is\nassistant: Paris\n", ts.to_s
+    assert_equal "Paris", prompt.captured(:france).to_s
+    assert_equal "user: The capital of France is\nassistant: Paris\n", prompt.to_s
   end
 
   def test_adds_two_gens_in_correctly_on_updated_transcript
@@ -90,18 +90,18 @@ class LLMCompletionsTest < Minitest::Test
     self.instruct_default_model = @mock
     @mock.expect_completion({ messages: [ { user: "The capital of France is".prompt_safe } ]}, "Paris")
     @mock.expect_completion(nil, "Berlin")
-    ts = Instruct::Transcript.new
-    ts << p{"user: The capital of France is"} + gen.capture(:france) + "\n".prompt_safe + p{"user: The capital of Germany is"} + gen.capture(:germany) + "\n".prompt_safe
+    prompt = Instruct::Prompt.new
+    prompt << p{"user: The capital of France is"} + gen.capture(:france) + "\n".prompt_safe + p{"user: The capital of Germany is"} + gen.capture(:germany) + "\n".prompt_safe
     @mock.verify
-    assert_equal "Paris", ts.captured(:france).to_s
-    assert_equal "Berlin", ts.captured(:germany).to_s
+    assert_equal "Paris", prompt.captured(:france).to_s
+    assert_equal "Berlin", prompt.captured(:germany).to_s
     expected = <<~TT
       user: The capital of France is
       assistant: Paris
       user: The capital of Germany is
       assistant: Berlin
     TT
-    assert_equal expected, ts.to_s
+    assert_equal expected, prompt.to_s
   end
 
   def test_perform_single_concat
@@ -109,13 +109,14 @@ class LLMCompletionsTest < Minitest::Test
       "The capital of France is " << gen()
     end
     @mock.expect_completion("The capital of France is ", "Paris.")
-    result = Instruct::Transcript.new("The capital of France is ") << gen()
+    result = Instruct::Prompt.new("The capital of France is ") << gen()
     assert_equal "The capital of France is Paris.", result.to_s
     @mock.verify
   end
 
   def test_p_helpers
     some_context = "test"
+    _ = some_context # silence unused variable warning
     prompt = p.system{"s <%= some_context %>"}
     prompt << p.user{"u <%= some_context %>"}
     prompt << p.assistant{"a <%= some_context %>"}

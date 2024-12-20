@@ -15,11 +15,11 @@ module Instruct::Rails
 end
 
 
-class Instruct::Transcript
+class Instruct::Prompt
   include Instruct::Rails::SerializableModel
 end
 
-class Instruct::Transcript::Completion
+class Instruct::Prompt::Completion
   include Instruct::Rails::SerializableModel
 end
 

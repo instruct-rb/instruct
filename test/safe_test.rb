@@ -9,7 +9,7 @@ class Test < Minitest::Test
     self.instruct_default_model = @mock
   end
 
-  def test_transcripts_are_unsafe_by_default
+  def test_prompts_are_unsafe_by_default
     prompt = "The capital of France is " + gen()
     expected = AttributedString.new(prompt, safe: false)
     assert_safe_match expected, prompt
@@ -35,7 +35,7 @@ class Test < Minitest::Test
 
   def test_prompt_safe_helper_is_safe
     prompt = "abc".prompt_safe + gen()
-    expected = Instruct::Transcript.new("abc", safe: true) + gen()
+    expected = Instruct::Prompt.new("abc", safe: true) + gen()
     assert_safe_match expected, prompt
   end
 

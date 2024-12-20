@@ -4,15 +4,15 @@ require 'yaml'
 module Instruct::Serializer
 
     class << self
-      def dump(transcript_or_completion)
-        YAML.dump(transcript_or_completion)
+      def dump(prompt_or_completion)
+        YAML.dump(prompt_or_completion)
       end
 
-      def load(transcript_or_completion_bytes, permitted_classes: [])
+      def load(prompt_or_completion_bytes, permitted_classes: [])
         permitted_classes = permitted_classes + @@permitted_classes.dup
         # permitted_classes += PERMITTED_CLASSES
         # all instruct classes at load time should be permitted
-        doc = Psych.parse(transcript_or_completion_bytes)
+        doc = Psych.parse(prompt_or_completion_bytes)
         transform_ast(doc, permitted_classes)
         doc.to_ruby
       end

@@ -29,7 +29,7 @@ require_relative "instruct/gen/generate_completion"
 require_relative "instruct/gen/gen"
 require_relative "instruct/middleware/chat_completion_middleware"
 require_relative "instruct/middleware/chomp_middleware"
-require_relative "instruct/transcript"
+require_relative "instruct/prompt"
 
 require_relative "instruct/helpers/erb_helper"
 require_relative "instruct/helpers/gen_helper"
