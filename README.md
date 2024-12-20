@@ -44,10 +44,12 @@ doesn't abstract away control.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+This gem won't be published to RubyGems until it's more stable. For now, you can
+add these lines to your application's Gemfile:
 
 ```ruby
-  gem "instruct"
+  gem "instruct", github: "instruct-rb/instruct", branch: "development"
+  gem "attributed-string", github: "instruct-rb/attributed-string", branch: "main"
 ```
 
 Include the helpers and refinements in the modules or classes where you want to
