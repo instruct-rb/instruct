@@ -154,10 +154,10 @@ Passing a `list: :key` keyword argument will capture an array of completions und
 ### Adding Roles to a Prompt
 
 Most modern LLMs are designed for conversational style completions. The chat
-completion middleware transforms a transcript prompt into an object that can be
-used with these APIs.
+completion middleware transforms a prompt formatted like a transcript into an
+object that can be used with these APIs.
 ```ruby
-  # Roles can be added to the prompt by a new line with the role name
+  # Roles can be added to a prompt transcript by a new line with the role name
   # followed by a colon and then a space.
   transcript = p{"
     system: You're an expert geographer that speaks only French
@@ -165,7 +165,7 @@ used with these APIs.
   "} + gen(prompt, stop_chars: "\n ,;.", model: 'gpt-4o')
 
 
-  # The returned or captured completion does not include any role prefix.
+  # Note the returned or captured completion does not include any role prefix.
   completion = transcript.call
   puts completion # => "le capital de l'Australie est Canberra"
 
@@ -178,11 +178,11 @@ used with these APIs.
   #     assistant: le capital de l'Australie est Canberra"
 ```
 
-If you want to be more explicit about adding roles in the transcript, instruct provides
-`#p.system`, `#p.user`, and `#p.assistant` helper methods.
+If you want to be more explicit about adding roles in to a prompt, instruct provides
+`#p.system`, `#p.user`, and `#p.assistant` helper methods. There is nothing
+special about these methods, they just prepend the role prefix to the string
 
 ```ruby
-  # identitical to above, the helpers just prepend the "\n#{role_prefix}: " for you.
   transcript = p.system{"You're an expert geographer that speaks only French"}
   transcript += p.user{"What is the capital of Australia?"}
   transcript += gen(stop_chars: "\n ,;.", model: 'gpt-4o')
@@ -209,11 +209,11 @@ shows how to use a chomped ERB heredoc to generate larger prompts with both
 ```ruby
   p = p{<<~ERB.chomp
       This is a longer prompt, if the included content might include
-      injections  use the normal ERB tags like so: <%= unsafe_user_content %>.
+      injections use the normal ERB tags like so: <%= unsafe_user_content %>.
 
       If we know that something doesn't include prompt injections, add it
       as: <%= raw some_safe_content %>, #{some_safe_content} or <%=
-      some_safe_content.prompt_safe %>.
+      some_safe_string.prompt_safe %>.
 
       By default generated LLM responses as <%= gen %> or #{ gen } will be added
       to the prompt as unsafe. To add it as safe we cannot use the ERB
@@ -296,7 +296,7 @@ different ways.
   # Adding a completion to a prompt will return the prompt with the completion appended.
   # If this completion was generated using the same prompt, it will also update the prompts
   # content with any additional changes that were made by middleware during
-  # the call that produced the completion. This includes the capture of values.
+  # the call that produced the completion. This includes transferring the captured values.
 
   together.class
   # => Instruct::Prompt
@@ -311,10 +311,19 @@ different ways.
   result = prompt.call
   # => [ "Berlin", "Europe" ] # Array<Instruct::Prompt::Completion>
 
+  new_prompt == Instruct::Serializer.load(Instruct::Serializer.dump(prompt))
+  # => "The capital of Germany is 💬, which is in the region of 💬"
+
+  new_prompt == prompt
+  # => true
+
   # The results are joined together with the prompt in the order they were returned.
-  together = prompt + result
+  together = new_prompt + result
   # => "The capital of Germany is Berlin, which is in the region of Europe"
 
+  # The interpolation only occurs if the prompt that generated the completion(s)
+  # is equal to the prompt that is being added or concatenated to. In all other
+  # cases the completion is added to the end of the prompt.
 ```
 
 ## Logging Setup
