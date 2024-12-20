@@ -4,7 +4,7 @@ Gem::Specification.new do |spec|
   spec.name          = "instruct"
   spec.version       = Instruct::VERSION
   spec.summary       = "Instruct LLMs to do what you want"
-  spec.homepage      = "https://github.com/mackross/instruct"
+  spec.homepage      = "https://instruct-rb.com"
   spec.license       = "Apache-2.0"
 
   spec.author        = "Andrew Mackross"
@@ -14,6 +14,10 @@ Gem::Specification.new do |spec|
   spec.require_path  = "lib"
 
   spec.required_ruby_version = ">= 3.2.3"
+
+  spec.metadata = {}
+  spec.metadata["source_code_uri"] = "https://github.com/instruct-rb/instruct"
+  spec.metadata["homepage_uri"] = "https://instruct-rb.com"
 
 
   # removing from std lib in ruby 3.5
