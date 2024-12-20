@@ -151,7 +151,7 @@ accessible from the prompt with `captured`.
 
 Passing a `list: :key` keyword argument will capture an array of completions under the same key.
 
-### Adding Roles to a Prompt
+### Creating a Prompt Transcript
 
 Most modern LLMs are designed for conversational style completions. The chat
 completion middleware transforms a prompt formatted like a transcript into an
