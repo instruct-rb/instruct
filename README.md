@@ -1,5 +1,44 @@
 # Instruct
+*Instruct LLMs to do what you want in Ruby.*
 
+Combine **code**, **prompts**, and **completions** in a natural and intuitive
+way for programmers. Inspired by libraries like
+[Guidance](https://github.com/guidance-ai/guidance) and rack, Instruct strips
+away boilerplate code while providing a flexible and powerful interface that
+doesn't abstract away control over the LLM.
+
+
+## Features
+
+* **Natural and Intuitive API**
+  
+  Using LLMs with instruct is not too different from plain old string
+  manipulation. This lets you think about your prompts and completions in a way
+  that intuitively makes sense to most programmers.
+* **Safe Prompting**
+  
+  The ERB `#p{}`rompt helper can be used to generate prompts with dynamic input in an
+  familiar way. Dynamic input is automatically marked as unsafe and can be
+  handled differently by middleware (for example to check for prompt
+  injections). Use `.prompt_safe` to mark part of the prompt as safe.
+* **Flexible Middleware Stack**
+  
+  Middleware can be used to add features like structured output, conversation
+  pruning, RAG integrations, retries, auto-continuation, guard-rails, monitoring
+  and more. The middleware stack also provides a common way to transform a prompt for
+  different LLM models with different capabilities.
+* **Streaming Support**
+  
+  Both middleware and callers can process completion responses as the chunks
+  arrive. This can be used to display a completion in real time, or to validate
+  or parse the output of an LLM call as it's being generated.
+* **Rails Integration**
+  
+  Prompts, completions and models can be serialized and stored on ActiveRecord
+  with custom attributes and will automatically serialize when passed to an
+  ActiveJob. Enabling easy background processing of LLM calls.
+
+---
 🏗️ **This gem is still undergoing active development and is not yet ready for use
 beyond experimentation.**
 
@@ -8,44 +47,10 @@ from the community to help develop this further.
 
 ---
 
-*Instruct LLMs to do what you want in Ruby.*
-
-Combine **code**, **prompts**, and **completions** in a natural and intuitive
-way for programmers. Inspired by libraries like
-[Guidance](https://github.com/guidance-ai/guidance) and rack, Instruct strips
-away boilerplate code while providing a flexible and powerful interface that
-doesn't abstract away control.
-
-
-## Features
-
-* **Natural and Intuitive API**
-  Using LLMs with instruct is not too different from plain old string
-  manipulation. This lets you think about your prompts and completions in a way
-  that intuitively makes sense to most programmers.
-* **Safe Prompting**
-  The ERB `#p{}`rompt helper can be used to generate prompts with dynamic input in an
-  familiar way. Dynamic input is automatically marked as unsafe and can be
-  handled differently by middleware (for example to check for prompt
-  injections). Use `.prompt_safe` to mark part of the prompt as safe.
-* **Flexible Middleware Stack**
-  Middleware can be used to add features like structured output, conversation
-  pruning, RAG integrations, retries, auto-continuation, guard-rails, monitoring
-  and more. The middleware stack provides a common way to transform a prompt for
-  different LLM models with different capabilities.
-* **Streaming Support**
-  Both middleware and callers can process completion responses as the chunks
-  arrive. This can be used to display a completion in real time, or to validate
-  or parse the output of an LLM call as it's being generated.
-* **Rails Integration**
-  Prompts, completions and models can be serialized and stored on ActiveRecord
-  with custom attributes and will automatically serialize when passed to an
-  ActiveJob. Enabling easy background processing of LLM calls.
-
 ## Installation
 
-This gem won't be published to RubyGems until it's more stable. For now, you can
-add these lines to your application's Gemfile:
+This gem won't be published again to RubyGems until it's more stable. For now, you
+should add these lines to your application's Gemfile to experiment with Instruct:
 
 ```ruby
   gem "instruct", github: "instruct-rb/instruct", branch: "development"
