@@ -157,10 +157,6 @@ module Instruct
       include Instruct::Serializable
       set_instruct_class_id 3
       attr_reader :prompt
-      def initialize(*args, duped_transcript: nil, **kwargs)
-        super(*args, **kwargs)
-        @prompt = duped_transcript
-      end
 
       def apply_to_transcript(transcript)
         deferred_gens = transcript.attachments_with_positions.filter { |obj| obj[:attachment].is_a?(Instruct::Gen) }
@@ -190,6 +186,13 @@ module Instruct
         filtered = self.filter { |attrs| attrs[:stream_chunk] == chunk }
         ranges = filtered.original_ranges_for(0..(filtered.length - 1))
         ranges.map { |range| self[range] }.join
+      end
+
+      def _prepare_for_return(prompt:, updated_transcript:, captured_key:, captured_list_key:)
+        @prompt = prompt
+        @updated_transcript = updated_transcript
+        @key = captured_key
+        @list_key = captured_list_key
       end
 
 

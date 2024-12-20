@@ -1,8 +1,8 @@
 class Instruct::Gen
   class CompletionRequest
-    def initialize(transcript, completion, **kwargs)
-      @env = kwargs.reject { |k, v| [:arr_name , :name].include?(k) }
-      @transcript = transcript.dup
+    def initialize(transcript:, completion:, env:)
+      @env = env
+      @transcript = transcript
       @completion = completion
       @prompt_transformers = []
       @stream_handlers = []
@@ -13,13 +13,6 @@ class Instruct::Gen
     end
 
     # returns the respose a TranscriptString from the model
-    def execute(model)
-      # TODO: this logic can probably move onto the model
-      if model.respond_to?(:middleware_chain)
-        model = model.middleware_chain(self)
-      end
-      model.execute(self)
-    end
 
     def env
       @env
