@@ -123,7 +123,9 @@ class LLMCompletionsTest < Minitest::Test
     assert_equal "\nsystem: s test\nuser: u test\nassistant: a test", prompt.to_s
   end
 
-  def test_conversation_example
+  def test_conversation_example_captures_correct_replies
+    @mock = MockCompletionModel.new(middlewares: [Instruct::ChatCompletionMiddleware])
+    self.instruct_default_model = @mock
     @mock.expect_completion(nil, "hello")
     7.times do |i|
       @mock.expect_completion(nil, "p#{i}")
@@ -131,16 +133,36 @@ class LLMCompletionsTest < Minitest::Test
     end
     @mock.expect_completion(nil, "bye")
     pop_star = "Noel Gallagher"
-    pop_star = p{"system: You're <%= pop_star %>. You are being interviewed, each message from the user is from an interviewer"}
-    interviewer = p{"system: You're an expert interviewer, each message is from the pop star you're interviewing"}
-    interviewer << p{"user: [<%= pop_star %> sits down in front of you]"} + gen
+    pop_star = p{"\nsystem: You're <%= pop_star %>. You are being interviewed, each message from the user is from an interviewer"}
+    interviewer = p{"\nsystem: You're an expert interviewer, each message is from the pop star you're interviewing"}
+    interviewer << p{"\nuser: [<%= pop_star %> sits down in front of you]"} + gen.capture(:reply)
 
     7.times do
-      pop_star << p{"user: <%= interviewer.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
-      interviewer << p{"user: <%= pop_star.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
+      pop_star << p{"\nuser: <%= interviewer.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
+      interviewer << p{"\nuser: <%= pop_star.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
     end
 
-    interviewer << p{"user: <%= pop_star.captured(:reply) %> I've got to head off now."} + gen.capture(:reply, list: :replies)
+    output = <<~PROMPT.chomp
+
+      system: You're Noel Gallagher. You are being interviewed, each message from the user is from an interviewer
+      user: hello
+      assistant: p0
+      user: i0
+      assistant: p1
+      user: i1
+      assistant: p2
+      user: i2
+      assistant: p3
+      user: i3
+      assistant: p4
+      user: i4
+      assistant: p5
+      user: i5
+      assistant: p6
+    PROMPT
+    assert_equal output, pop_star.to_s
+
+    interviewer << p{"\nuser: <%= pop_star.captured(:reply) %> I've got to head off now."} + gen.capture(:reply, list: :replies)
     @mock.verify
     conversation = pop_star.captured(:replies).zip(interviewer.captured(:replies)).flatten.join("")
     expected = "p0i0p1i1p2i2p3i3p4i4p5i5p6i6"

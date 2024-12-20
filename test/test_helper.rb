@@ -12,5 +12,4 @@ require_relative "utils/middleware"
 class Minitest::Test
   Instruct.suppress_warnings = true
   include Assertions
-  # custom as
 end
