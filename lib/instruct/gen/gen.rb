@@ -51,11 +51,15 @@ module Instruct
 
 
    def to_s
-     if @result.nil?
-       "<Instruct::Gen>"
-     else
-        "<Instruct::Gen call_count=#{result.length}>"
-     end
+     buffer = +"<Instruct::Gen"
+     buffer << " prompt=#{prompt.to_s.inspect}" if prompt
+     buffer << " model=#{model.to_s}" if model
+     buffer << " args=#{gen_kwargs.inspect}" if gen_kwargs && !gen_kwargs.empty?
+     buffer << " capture=#{@capture_key}" if @capture_key
+     buffer << " capture_list=#{@capture_list_key}" if @capture_list_key
+     buffer << " result_count=#{@results.count}" if @results && !@results.empty?
+     buffer << ">"
+     buffer
    end
 
    private
