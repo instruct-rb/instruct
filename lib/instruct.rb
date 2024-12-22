@@ -18,6 +18,8 @@ require_relative "instruct/utils/symbolize_keys"
 require_relative "instruct/utils/variables"
 
 # modules
+require_relative "instruct/helpers/erb_helper"
+require_relative "instruct/helpers/gen_helper"
 
 require_relative "instruct/compile_erb"
 require_relative "instruct/env"
@@ -31,8 +33,6 @@ require_relative "instruct/middleware/chat_completion_middleware"
 require_relative "instruct/middleware/chomp_middleware"
 require_relative "instruct/prompt"
 
-require_relative "instruct/helpers/erb_helper"
-require_relative "instruct/helpers/gen_helper"
 require_relative "instruct/helpers/model_helper"
 require_relative "instruct/helpers/refinements"
 require_relative "instruct/helpers/helpers"

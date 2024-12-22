@@ -11,29 +11,29 @@ doesn't abstract away control over the LLM.
 ## Features
 
 * **Natural and Intuitive API**
-  
+
   Using LLMs with instruct is not too different from plain old string
   manipulation. This lets you think about your prompts and completions in a way
   that intuitively makes sense to most programmers.
 * **Safe Prompting**
-  
+
   The ERB `#p{}`rompt helper can be used to generate prompts with dynamic input in an
   familiar way. Dynamic input is automatically marked as unsafe and can be
   handled differently by middleware (for example to check for prompt
   injections). Use `.prompt_safe` to mark part of the prompt as safe.
 * **Flexible Middleware Stack**
-  
+
   Middleware can be used to add features like structured output, conversation
   pruning, RAG integrations, retries, auto-continuation, guard-rails, monitoring
   and more. The middleware stack also provides a common way to transform a prompt for
   different LLM models with different capabilities.
 * **Streaming Support**
-  
+
   Both middleware and callers can process completion responses as the chunks
   arrive. This can be used to display a completion in real time, or to validate
   or parse the output of an LLM call as it's being generated.
 * **Rails Integration**
-  
+
   Prompts, completions and models can be serialized and stored on ActiveRecord
   with custom attributes and will automatically serialize when passed to an
   ActiveJob. Enabling easy background processing of LLM calls.
@@ -199,6 +199,13 @@ shows how to use a chomped ERB heredoc to generate larger prompts with both
     ERB
   }
 ```
+
+Note that if you call `#p` with without a block and with arguments, it will pass
+through to `Kernel#p`. That is you can still use `p obj` to inspect objects.
+
+Alternatively, if you don't include the `Instruct::Helpers` module, you can use
+the module directly with `Instruct.p`.
+
 
 ### A More Complex Example: Multi-Turn Conversations Between Agents
 

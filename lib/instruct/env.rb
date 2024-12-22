@@ -2,6 +2,9 @@ require 'logger'
 
 module Instruct
   class << self
+    include Instruct::Helpers::ERBHelper
+    include Instruct::Helpers::GenHelper
+
     attr_accessor :suppress_warnings
     attr_accessor :openai_loaded, :anthropic_loaded
     attr_writer :logger, :err_logger
