@@ -6,7 +6,7 @@ include Instruct::Helpers
 
 # iruby notebook doesn't work with refinements
 # Instead we use monkey patches
-require_relative "../../lib/instruct/helpers/monkeypatches"
+require_relative "../lib/instruct/helpers/monkeypatches"
 
 Instruct.suppress_warnings = true
 
