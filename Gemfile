@@ -5,7 +5,16 @@ gemspec
 # optional production deps
 gem "rainbow"
 gem "ruby-openai"
+gem "anthropic"
 
+group :rails_only do
+  gem "rails"
+  gem "activejob"
+end
+
+group :jupyter do
+  gem "iruby"
+end
 # development
 gem "rake"
 gem "minitest"
