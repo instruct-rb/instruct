@@ -12,6 +12,8 @@ See instruct-spygrad gem for automatic prompt optimization (dspy and textgrad in
 See instruct-structured-output for structured output (instruct-spy depends on this) (baml inspired)
 See instruct-guard for guardrails to stop prompt injections
 
+consider raising an error on call if the prompt is missing a gen
+
 
   # skip systems prompts
   memory = Instruct::StructuredMemory.new

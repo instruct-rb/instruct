@@ -14,6 +14,7 @@ end
 
 group :jupyter do
   gem "iruby"
+  gem "rexml"
 end
 # development
 gem "rake"
