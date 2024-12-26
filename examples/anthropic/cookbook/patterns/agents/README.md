@@ -15,7 +15,7 @@ This folder contains example minimal implementations of common agent workflows d
   - Evaluator-Optimizer
 
 ## Getting Started
-See the Jupyter notebooks for detailed examples:
+See the IRuby Jupyter notebooks for detailed examples:
 
 - [Basic Workflows](basic_workflows.ipynb)
 - ~~[Evaluator-Optimizer Workflow](evaluator_optimizer.ipynb)~~ (coming later)
