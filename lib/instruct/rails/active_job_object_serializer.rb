@@ -16,7 +16,7 @@ module Instruct::Rails
 
       # Allow models to be serialized
       return true if Instruct.openai_loaded && object.is_a?(OpenAI)
-      return true if Anthropic.anthropic_loaded && object.is_a?(Anthropic)
+      return true if Instruct.anthropic_loaded && object.is_a?(Anthropic)
       false
     end
   end
