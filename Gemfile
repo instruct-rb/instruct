@@ -13,7 +13,7 @@ group :rails_only do
 end
 
 group :jupyter do
-  gem "iruby"
+  gem "iruby", github: "mackross/iruby", branch: "master"
   gem "rexml"
 end
 # development
