@@ -16,7 +16,7 @@ class MockCompletionModel
   end
 
   def middleware_chain(req)
-    @chain ||= Instruct::MiddlewareChain.new(middlewares: @middlewares + [self])
+    @chain ||= Instruct::MiddlewareChain.new(middlewares: @middlewares + [ self ])
   end
 
   def call(req, _next:)
@@ -58,5 +58,4 @@ class MockCompletionModel
       raise MockExpectationError, "Expected #{@expected_calls.length} completion calls, but got #{@position}"
     end
   end
-
 end

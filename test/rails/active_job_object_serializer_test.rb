@@ -11,9 +11,8 @@ class RailsActiveJobObjectSerializerTest < Minitest::Test
   end
   def test_serializer_works
     prompt = Instruct::Prompt.new("system: a\nuser: b\nassistant: c".prompt_safe) + gen
-    data = ActiveJob::Serializers.serialize( prompt)
+    data = ActiveJob::Serializers.serialize(prompt)
     obj = ActiveJob::Serializers.deserialize(data)
     assert_equal prompt, obj
   end
-
 end

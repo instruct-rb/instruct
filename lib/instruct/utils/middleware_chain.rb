@@ -43,6 +43,5 @@ module Instruct
 
       middleware.is_a?(Instruct::MiddlewareChain) ? middleware.execute(req) : middleware.call(req, _next: self)
     end
-
   end
 end

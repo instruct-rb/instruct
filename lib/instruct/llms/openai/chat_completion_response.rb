@@ -1,6 +1,5 @@
 class Instruct::OpenAI
   class ChatCompletionResponse < Instruct::Gen::CompletionResponse
-
     def call(chunk)
       case Instruct::SymbolizeKeys.recursive(chunk)
       # TODO: check if this will break if the content is not text
@@ -16,6 +15,5 @@ class Instruct::OpenAI
       end
       chunk_processed
     end
-
   end
 end

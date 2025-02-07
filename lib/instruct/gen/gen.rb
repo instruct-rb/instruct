@@ -22,7 +22,7 @@ module Instruct
      # that has run and one that hasn't
      return false if @gen_kwargs != other.gen_kwargs
      return false if @model.is_a?(String) && other.model.is_a?(String) && @model != other.model
-     return @model.class == other.model.class
+     @model.class == other.model.class
    end
 
    def capture(key, list: nil)
@@ -42,7 +42,7 @@ module Instruct
      gen_and_call_kwargs = gen_kwargs.merge(call_kwargs)
      model = select_first_model_from(model, @model, Instruct.default_model, gen_and_call_kwargs:)
 
-     generate_completion = Instruct::GenerateCompletion.new(prompt:, model:, capture_key:, capture_list_key:, streaming_block:, gen_and_call_kwargs: )
+     generate_completion = Instruct::GenerateCompletion.new(prompt:, model:, capture_key:, capture_list_key:, streaming_block:, gen_and_call_kwargs:)
      completion = generate_completion.call(calling_gen: self)
 
      @results << completion
@@ -53,7 +53,7 @@ module Instruct
    def to_s
      buffer = +"<Instruct::Gen"
      buffer << " prompt=#{prompt.to_s.inspect}" if prompt
-     buffer << " model=#{model.to_s}" if model
+     buffer << " model=#{model}" if model
      buffer << " args=#{gen_kwargs.inspect}" if gen_kwargs && !gen_kwargs.empty?
      buffer << " capture=#{@capture_key}" if @capture_key
      buffer << " capture_list=#{@capture_list_key}" if @capture_list_key
@@ -69,6 +69,5 @@ module Instruct
      model = Instruct::Model.from_string(model, **gen_and_call_kwargs) if model.is_a?(String)
      model
    end
-
  end
 end

@@ -9,7 +9,7 @@ module Assertions
       expected_attr = expected.attrs_at(index)[:safe] || false
       actual_attr = actual.attrs_at(index)[:safe] || false
       assert_equal expected_attr, actual_attr, "Expected safe attribute at #{prefix}<issue>#{char}</issue> (index: #{index}) of \"#{actual.inspect}\" to match."
-      prefix.concat(char)
+      prefix + char
     end
   end
 end

@@ -1,7 +1,6 @@
 class Instruct::Gen
   # Abstract class for completion responses
   class CompletionResponse
-
     attr_reader :finished, :finished_reason
 
     def finished?
@@ -9,7 +8,7 @@ class Instruct::Gen
     end
 
     attr_writer :stream_handlers
-    def initialize(stream_handlers: [], completion: )
+    def initialize(stream_handlers: [], completion:)
       @response_buffer = completion
       @stream_handlers = stream_handlers
       @chunks = 0
@@ -59,8 +58,5 @@ class Instruct::Gen
     def response_buffer
       @response_buffer
     end
-
-
-
   end
 end

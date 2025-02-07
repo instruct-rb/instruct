@@ -43,7 +43,7 @@ class TestSerializable < Minitest::Test
     data = Instruct::Serializer.dump(obj)
     loaded = Instruct::Serializer.load(
       data,
-      permitted_classes: [SimpleObject]
+      permitted_classes: [ SimpleObject ]
     )
 
     assert_kind_of SimpleObject, loaded
@@ -58,7 +58,7 @@ class TestSerializable < Minitest::Test
 
     loaded = Instruct::Serializer.load(
       old_yaml,
-      permitted_classes: [VersionedObject]
+      permitted_classes: [ VersionedObject ]
     )
 
     # After migration, old_field should become new_field
@@ -104,7 +104,7 @@ class TestSerializable < Minitest::Test
 
     loaded = Instruct::Serializer.load(
       yaml,
-      permitted_classes: [RenamedClass]
+      permitted_classes: [ RenamedClass ]
     )
 
     assert_equal "updated", loaded.instance_variable_get("@msg")
@@ -119,5 +119,4 @@ class TestSerializable < Minitest::Test
       Instruct::Serializer.load(yaml)
     end
   end
-
 end

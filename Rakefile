@@ -25,7 +25,7 @@ end
 
 namespace :docs do
   desc "Start YARD documentation server"
-  task :server, [:port] do |t, args|
+  task :server, [ :port ] do |t, args|
     port = args[:port] || 8808
     puts "Starting YARD server on http://localhost:#{port}"
     system("yard server -p #{port} -r")

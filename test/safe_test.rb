@@ -1,4 +1,4 @@
-require_relative 'test_helper'
+require_relative "test_helper"
 
 class Test < Minitest::Test
   include Instruct::Helpers
@@ -16,19 +16,19 @@ class Test < Minitest::Test
   end
 
   def test_erb_is_safe_including_interpolated_values
-    prompt = p{"this is #{"safe"}"}
+    prompt = p { "this is #{"safe"}" }
     assert_safe_match AttributedString.new("this is safe", safe: true), prompt
   end
 
   def test_inside_erb_tags_are_unsafe
-    prompt = p{'.<%= "this is unsafe" %>.'}
+    prompt = p { '.<%= "this is unsafe" %>.' }
     period = AttributedString.new(".", safe: true)
     expected = period + AttributedString.new("this is unsafe", safe: false) + period
     assert_safe_match expected, prompt
   end
 
   def test_erb_with_raw_is_safe
-    prompt = p{'.<%= raw "this is safe" %>.'}
+    prompt = p { '.<%= raw "this is safe" %>.' }
     expected = AttributedString.new(".this is safe.", safe: true)
     assert_safe_match expected, prompt
   end
@@ -47,6 +47,4 @@ class Test < Minitest::Test
     assert_safe_match unsafe_paris, result
     assert_safe_match ("The capital of France is ".prompt_safe + unsafe_paris), (prompt + result)
   end
-
-
 end

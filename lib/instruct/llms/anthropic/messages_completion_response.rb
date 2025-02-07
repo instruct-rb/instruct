@@ -14,7 +14,7 @@ class Instruct::Anthropic
       in { type: "content_block_delta", index: _index, delta: { type: "text_delta", text: chunk }}
           append_text_chunk(chunk)
       in { type: "content_block_stop", index: _index }
-          # do nothing
+      # do nothing
       in { type: "message_delta", delta: { stop_reason: } }
           # this occurs just before the message_stop and lets us collect the stop reason (and other info like output tokens)
           @delta_finish_reason = stop_reason
@@ -22,14 +22,12 @@ class Instruct::Anthropic
         done(@delta_finish_reason)
       in { type: "ping" }
         # do nothing
-      in { error: { message: , type: } }
+      in { error: { message:, type: } }
         raise RuntimeError, "Anthropic Client Error: (type: #{type}, message: #{message})"
       else
         raise RuntimeError, "Unexpected Chunk: #{chunk}"
       end
       chunk_processed
     end
-
-
   end
 end

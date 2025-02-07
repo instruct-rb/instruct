@@ -1,7 +1,6 @@
-require 'psych'
+require "psych"
 
 module Instruct
-
   module Serializable
     def self.included(base)
       base.extend(ClassMethods)
@@ -63,7 +62,7 @@ module Instruct
     private
 
     def instance_vars_to_hash
-      Hash[instance_variables.map { |ivar| [ivar.to_s.sub('@', ''), instance_variable_get(ivar)] }]
+      Hash[instance_variables.map { |ivar| [ ivar.to_s.sub("@", ""), instance_variable_get(ivar) ] }]
     end
 
     def hash_to_instance_vars(data)

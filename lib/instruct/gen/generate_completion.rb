@@ -1,6 +1,6 @@
 module Instruct
   class GenerateCompletion
-    def initialize(prompt:, model:, streaming_block:nil, capture_key:, capture_list_key:, gen_and_call_kwargs:)
+    def initialize(prompt:, model:, streaming_block: nil, capture_key:, capture_list_key:, gen_and_call_kwargs:)
       @prompt = prompt
       @model = model
       @streaming_block = streaming_block
@@ -56,6 +56,5 @@ module Instruct
         @prompt.dup
       end
     end
-
   end
 end

@@ -55,9 +55,5 @@ class Instruct::Gen
     def stream_handlers
       @stream_handlers.reverse
     end
-
-
-
-
   end
 end

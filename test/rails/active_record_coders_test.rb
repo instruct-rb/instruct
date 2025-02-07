@@ -11,5 +11,4 @@ class RailsActiveJobObjectSerializerTest < Minitest::Test
     assert_equal prompt, obj
     skip "needs documentation"
   end
-
 end

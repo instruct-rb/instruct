@@ -3,7 +3,7 @@ require "active_job"
 module Instruct::Rails
   class ActiveJobObjectSerializer < ActiveJob::Serializers::ObjectSerializer
     def self.serialize(prompt)
-      super({"value" => Instruct::Serializer.dump(prompt)})
+      super({ "value" => Instruct::Serializer.dump(prompt) })
     end
 
     def self.deserialize(hash)

@@ -1,5 +1,4 @@
 class MockCompletionStreamResponse < Instruct::Gen::CompletionResponse
-
   def self.text_chunk(text_chunk, finish_reason: nil)
     return { text_chunk: text_chunk, finish_reason: self.finish_reason(finish_reason) } if finish_reason
     { text_chunk: text_chunk }
@@ -24,6 +23,7 @@ class MockCompletionStreamResponse < Instruct::Gen::CompletionResponse
     @pos = 0
     @stream_chunks = stream_chunks
     if text
+      text = text.dup
       # split the text into chunks randomly 2-5 characters long
       while text.length > 0
         chunk_length = rand(2..5)
@@ -48,5 +48,4 @@ class MockCompletionStreamResponse < Instruct::Gen::CompletionResponse
       @pos += 1
     end
   end
-
 end

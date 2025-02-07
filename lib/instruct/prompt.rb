@@ -41,7 +41,7 @@ module Instruct
 
     def concat(other, *args, perform_call: false, apply_completions: false)
       if other.is_a?(Array) && other.all? { |obj| obj.is_a?(Prompt::Completion) } && !other.empty?
-        return concat(*(other + args), perform_call:, apply_completions: )
+        return concat(*(other + args), perform_call:, apply_completions:)
       end
       if other.is_a?(Prompt::Completion) && apply_completions
         other.apply_to_prompt(self)
@@ -70,7 +70,7 @@ module Instruct
         next_substring_index = position + 1
       end
       substrings << self[next_substring_index..self.length - 1] if next_substring_index <= self.length - 1
-      return [gens, substrings]
+      [ gens, substrings ]
     end
 
     def hide_range_from_prompt(range, by:)
@@ -89,7 +89,7 @@ module Instruct
       return prompt_object if hidden_chars.empty?
       ranges = hidden_chars.original_ranges_for(0..hidden_chars.length - 1)
       ranges.each do |range|
-        prompt_object[range] = ''
+        prompt_object[range] = ""
       end
       prompt_object
     end
@@ -103,7 +103,7 @@ module Instruct
         case gen
         when :no_change
         when :hide
-          string[position] = ''
+          string[position] = ""
         when :expand
           string[position] = obj[:attachment].to_s
         when :emoji
@@ -137,13 +137,13 @@ module Instruct
         @captured[key] = value
       end
       if list_key
-        @captured[list_key] ||= [@captured[list_key]].compact
+        @captured[list_key] ||= [ @captured[list_key] ].compact
         @captured[list_key] << value
       end
     end
 
     def len_hidden_attrs(attrs)
-      attrs.keys.filter { |key| key.to_s.start_with?('hidden_') }.length
+      attrs.keys.filter { |key| key.to_s.start_with?("hidden_") }.length
     end
 
 
@@ -207,11 +207,8 @@ module Instruct
       def captured=(key, list_key)
         @key, @list_key = key, list_key
       end
-
     end
 
     private
-
-
   end
 end

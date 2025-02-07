@@ -12,15 +12,15 @@ Instruct.suppress_warnings = true
 
 class AttributedString
   def escape_html(html)
-    CGI::escapeHTML(html).gsub("\n", "<br>").gsub("$", "\\$")
+    CGI.escapeHTML(html).gsub("\n", "<br>").gsub("$", "\\$")
   end
 end
 
 class Instruct::Prompt
-  def to_html; return "<span style='color: #333;'>#{escape_html(to_s(gen: :emoji))}</span>"; end
+  def to_html; "<span style='color: #333;'>#{escape_html(to_s(gen: :emoji))}</span>"; end
 end
 class Instruct::Prompt::Completion
-  def to_html; return "<span style='color: #333; background: #0f0;'>#{escape_html(to_s)}</span>"; end
+  def to_html; "<span style='color: #333; background: #0f0;'>#{escape_html(to_s)}</span>"; end
 end
 class Instruct::Gen
   alias_method :old_call, :call

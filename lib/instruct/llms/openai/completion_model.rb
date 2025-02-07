@@ -11,7 +11,7 @@ module Instruct
       @middleware_chain ||= Instruct::MiddlewareChain.new(middlewares: (middlewares << self))
     end
 
-    def initialize(client_or_model_name = 'gpt-3.5-turbo-instruct', middlewares: [], **kwargs)
+    def initialize(client_or_model_name = "gpt-3.5-turbo-instruct", middlewares: [], **kwargs)
       @middlewares = middlewares
       @default_request_env = kwargs
       @cached_clients = {}
@@ -55,7 +55,7 @@ module Instruct
       else
         warn_about_completions_endpoint if !@warned
         response = request_params[:stream] = Instruct::OpenAI::CompletionResponse.new(**req.response_kwargs)
-        request_params.merge!({prompt: req.prompt_object})
+        request_params.merge!({ prompt: req.prompt_object })
         begin
             Instruct.logger.info("Sending OpenAI Completion Request: (#{request_params}) Client:(#{client.inspect})") if Instruct.logger.sev_threshold <= Logger::INFO
           _client_response = client.completions(parameters: request_params)
@@ -74,9 +74,9 @@ module Instruct
     protected
 
     def append_default_middleware_if_not_added(req, middlewares)
-      openai_middlewares = [Instruct::OpenAI::Middleware.new(use_developer_message: uses_developer_message?(req), temperature_not_supported: temperature_not_supported?(req))]
+      openai_middlewares = [ Instruct::OpenAI::Middleware.new(use_developer_message: uses_developer_message?(req), temperature_not_supported: temperature_not_supported?(req)) ]
       if is_chat_model?(req)
-        openai_middlewares = [Instruct::ChompMiddleware.new, Instruct::ChatCompletionMiddleware.new] + openai_middlewares
+        openai_middlewares = [ Instruct::ChompMiddleware.new, Instruct::ChatCompletionMiddleware.new ] + openai_middlewares
       end
       openai_middlewares.each do |middleware|
         if !middlewares.any? { |m| m.is_a?(middleware.class) }
@@ -88,7 +88,7 @@ module Instruct
     private
 
     def is_chat_model?(req)
-      !(req.env[:use_completion_endpoint] || ((req.env[:model] || @model_name) == 'gpt-3.5-turbo-instruct'))
+      !(req.env[:use_completion_endpoint] || ((req.env[:model] || @model_name) == "gpt-3.5-turbo-instruct"))
     end
 
     def uses_developer_message?(req)
@@ -96,7 +96,7 @@ module Instruct
     end
 
     def temperature_not_supported?(req)
-      is_o_reasoning_model?(req) 
+      is_o_reasoning_model?(req)
     end
 
     def is_o_reasoning_model?(req)
@@ -114,7 +114,7 @@ module Instruct
       client_opts.merge!(req_client_opts)
 
       @cached_clients[client_opts.hash] ||= ::OpenAI::Client.new(
-        access_token: client_opts[:access_token] || ENV['OPENAI_API_KEY'] || ENV['OPENAI_ACCESS_TOKEN'],
+        access_token: client_opts[:access_token] || ENV["OPENAI_API_KEY"] || ENV["OPENAI_ACCESS_TOKEN"],
         uri_base: client_opts[:uri_base],
         request_timeout: client_opts[:request_timeout],
         extra_headers: client_opts[:extra_headers]
@@ -122,7 +122,7 @@ module Instruct
     end
 
     def set_access_token_from_env_if_needed
-      access_key = ENV['OPENAI_API_KEY'] || ENV['OPENAI_ACCESS_TOKEN']
+      access_key = ENV["OPENAI_API_KEY"] || ENV["OPENAI_ACCESS_TOKEN"]
       @default_request_env[:access_token] = access_key if access_key && @default_request_env[:access_token].nil?
     end
 

@@ -21,7 +21,7 @@ class TranscriptSerializeTest < Minitest::Test
   end
 
   def test_prompt_with_result_serializes
-    @mock.expect_completion(nil, ["world"])
+    @mock.expect_completion(nil, [ "world" ])
     obj = Instruct::Prompt.new << "hello " + gen().capture(:x, list: :y)
     loaded = dump_and_load(obj)
     assert_equal obj.captured(:x).to_s, "world"
@@ -36,5 +36,4 @@ class TranscriptSerializeTest < Minitest::Test
     loaded = dump_and_load(obj)
     assert_equal obj, loaded
   end
-
 end

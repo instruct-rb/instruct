@@ -8,15 +8,15 @@ module Instruct
     def initialize(template:, _binding:)
       @binding = _binding
       @_erbout = Prompt.new
-      compiler = ERB::Compiler.new('-')
+      compiler = ERB::Compiler.new("-")
       compiler.put_cmd = "@_erbout.safe_concat"
       compiler.insert_cmd = "@_erbout.concat"
-      compiler.pre_cmd = ["@_erbout = + Prompt.new('')"]
-      compiler.post_cmd = ["@_erbout"]
+      compiler.pre_cmd = [ "@_erbout = + Prompt.new('')" ]
+      compiler.post_cmd = [ "@_erbout" ]
 
       src, _, _ = compiler.compile(template)
 
-      @output = eval(src, binding, '(erb without file)', 0)
+      @output = eval(src, binding, "(erb without file)", 0)
     end
 
     def raw(string)
@@ -34,6 +34,5 @@ module Instruct
         @binding.eval(name.to_s)
       end
     end
-
   end
 end

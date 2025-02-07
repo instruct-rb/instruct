@@ -42,10 +42,10 @@ class Instruct::Anthropic
     def normalize_stop_sequence_arguments(req, request_options)
       # Make the stop_chars and stop options consistent with openai
       if req.env[:stop_chars].is_a?(String)
-        request_options[:stop_sequences] = req.env[:stop_chars].split('')
+        request_options[:stop_sequences] = req.env[:stop_chars].split("")
       end
       if req.env[:stop].is_a?(String)
-        request_options[:stop_sequences] = [req.env[:stop]]
+        request_options[:stop_sequences] = [ req.env[:stop] ]
       elsif req.env[:stop].is_a?(Array)
         request_options[:stop_sequences] = req.env[:stop]
       end
@@ -74,15 +74,15 @@ class Instruct::Anthropic
       client_options.delete(:beta)
       client_options[:extra_headers] ||= {}
 
-      if client_options[:extra_headers]['anthropic-beta']
+      if client_options[:extra_headers]["anthropic-beta"]
         raise ArgumentError, "Cannot set anthropic-beta header to #{beta} when it is already set to #{client_options[:extra_headers]['anthropic-beta']}."
       end
 
       if beta.is_a?(Array)
-        client_options[:extra_headers]['anthropic-beta'] = beta.join(',')
+        client_options[:extra_headers]["anthropic-beta"] = beta.join(",")
       elsif beta.is_a?(String)
         client_options[:extra_headers] ||= {}
-        client_options[:extra_headers]['anthropic-beta'] = beta.to_s
+        client_options[:extra_headers]["anthropic-beta"] = beta.to_s
       else
         raise ArgumentError, "beta must be a string or an array of strings"
       end

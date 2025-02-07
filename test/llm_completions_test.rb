@@ -1,4 +1,4 @@
-require_relative 'test_helper'
+require_relative "test_helper"
 
 class LLMCompletionsTest < Minitest::Test
   include Instruct::Helpers
@@ -60,11 +60,11 @@ class LLMCompletionsTest < Minitest::Test
     prompt =  "The capital of France is " + gen() + ". This is in the region of " + gen() + "."
     assert_equal "The capital of France is 💬. This is in the region of 💬.", prompt.to_s
     results = prompt.call
-    assert_equal ["Paris", "Europe"], results.map(&:to_s)
+    assert_equal [ "Paris", "Europe" ], results.map(&:to_s)
     together = prompt + results
 
     assert_equal "The capital of France is 💬. This is in the region of 💬.", prompt.to_s
-    assert_equal ["Paris", "Europe"], results.map(&:to_s)
+    assert_equal [ "Paris", "Europe" ], results.map(&:to_s)
     assert_equal "The capital of France is Paris. This is in the region of Europe.", together.to_s
 
     @mock.expect_completion("The capital of France is ", "Paris Oui Oui")
@@ -75,23 +75,23 @@ class LLMCompletionsTest < Minitest::Test
   end
 
   def test_result_adds_in_correctly_in_two_part_string_with_double_arrow
-    @mock = MockCompletionModel.new(middlewares: [Instruct::ChatCompletionMiddleware])
+    @mock = MockCompletionModel.new(middlewares: [ Instruct::ChatCompletionMiddleware ])
     self.instruct_default_model = @mock
-    @mock.expect_completion({ messages: [ { user: "The capital of France is".prompt_safe } ]}, "Paris")
+    @mock.expect_completion({ messages: [ { user: "The capital of France is".prompt_safe } ] }, "Paris")
     prompt = Instruct::Prompt.new
-    prompt << p{"user: The capital of France is"} + gen.capture(:france) + "\n"
+    prompt << p { "user: The capital of France is" } + gen.capture(:france) + "\n"
     @mock.verify
     assert_equal "Paris", prompt.captured(:france).to_s
     assert_equal "user: The capital of France is\nassistant: Paris\n", prompt.to_s
   end
 
   def test_adds_two_gens_in_correctly_on_updated_transcript
-    @mock = MockCompletionModel.new(middlewares: [Instruct::ChatCompletionMiddleware])
+    @mock = MockCompletionModel.new(middlewares: [ Instruct::ChatCompletionMiddleware ])
     self.instruct_default_model = @mock
-    @mock.expect_completion({ messages: [ { user: "The capital of France is".prompt_safe } ]}, "Paris")
+    @mock.expect_completion({ messages: [ { user: "The capital of France is".prompt_safe } ] }, "Paris")
     @mock.expect_completion(nil, "Berlin")
     prompt = Instruct::Prompt.new
-    prompt << p{"user: The capital of France is"} + gen.capture(:france) + "\n".prompt_safe + p{"user: The capital of Germany is"} + gen.capture(:germany) + "\n".prompt_safe
+    prompt << p { "user: The capital of France is" } + gen.capture(:france) + "\n".prompt_safe + p { "user: The capital of Germany is" } + gen.capture(:germany) + "\n".prompt_safe
     @mock.verify
     assert_equal "Paris", prompt.captured(:france).to_s
     assert_equal "Berlin", prompt.captured(:germany).to_s
@@ -117,14 +117,14 @@ class LLMCompletionsTest < Minitest::Test
   def test_p_helpers
     some_context = "test"
     _ = some_context # silence unused variable warning
-    prompt = p.system{"s <%= some_context %>"}
-    prompt << p.user{"u <%= some_context %>"}
-    prompt << p.assistant{"a <%= some_context %>"}
+    prompt = p.system { "s <%= some_context %>" }
+    prompt << p.user { "u <%= some_context %>" }
+    prompt << p.assistant { "a <%= some_context %>" }
     assert_equal "\nsystem: s test\nuser: u test\nassistant: a test", prompt.to_s
   end
 
   def test_conversation_example_captures_correct_replies
-    @mock = MockCompletionModel.new(middlewares: [Instruct::ChatCompletionMiddleware])
+    @mock = MockCompletionModel.new(middlewares: [ Instruct::ChatCompletionMiddleware ])
     self.instruct_default_model = @mock
     @mock.expect_completion(nil, "hello")
     7.times do |i|
@@ -133,13 +133,13 @@ class LLMCompletionsTest < Minitest::Test
     end
     @mock.expect_completion(nil, "bye")
     pop_star = "Noel Gallagher"
-    pop_star = p{"\nsystem: You're <%= pop_star %>. You are being interviewed, each message from the user is from an interviewer"}
-    interviewer = p{"\nsystem: You're an expert interviewer, each message is from the pop star you're interviewing"}
-    interviewer << p{"\nuser: [<%= pop_star %> sits down in front of you]"} + gen.capture(:reply)
+    pop_star = p { "\nsystem: You're <%= pop_star %>. You are being interviewed, each message from the user is from an interviewer" }
+    interviewer = p { "\nsystem: You're an expert interviewer, each message is from the pop star you're interviewing" }
+    interviewer << p { "\nuser: [<%= pop_star %> sits down in front of you]" } + gen.capture(:reply)
 
     7.times do
-      pop_star << p{"\nuser: <%= interviewer.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
-      interviewer << p{"\nuser: <%= pop_star.captured(:reply) %>"} + gen.capture(:reply, list: :replies)
+      pop_star << p { "\nuser: <%= interviewer.captured(:reply) %>" } + gen.capture(:reply, list: :replies)
+      interviewer << p { "\nuser: <%= pop_star.captured(:reply) %>" } + gen.capture(:reply, list: :replies)
     end
 
     output = <<~PROMPT.chomp
@@ -162,12 +162,11 @@ class LLMCompletionsTest < Minitest::Test
     PROMPT
     assert_equal output, pop_star.to_s
 
-    interviewer << p{"\nuser: <%= pop_star.captured(:reply) %> I've got to head off now."} + gen.capture(:reply, list: :replies)
+    interviewer << p { "\nuser: <%= pop_star.captured(:reply) %> I've got to head off now." } + gen.capture(:reply, list: :replies)
     @mock.verify
     conversation = pop_star.captured(:replies).zip(interviewer.captured(:replies)).flatten.join("")
     expected = "p0i0p1i1p2i2p3i3p4i4p5i5p6i6"
     assert_equal expected, conversation
-
   end
 
   class ERBTestClass
@@ -176,7 +175,7 @@ class LLMCompletionsTest < Minitest::Test
       "test"
     end
     def create_prompt
-      p{"user: <%= test_method %>"}
+      p { "user: <%= test_method %>" }
     end
   end
 
@@ -184,5 +183,4 @@ class LLMCompletionsTest < Minitest::Test
     erb = ERBTestClass.new
     assert_equal "user: test", erb.create_prompt
   end
-
 end

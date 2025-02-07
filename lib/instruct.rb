@@ -1,11 +1,11 @@
 require_relative "instruct/version"
 
 # stdlib
-require 'erb'
-require 'ostruct'
+require "erb"
+require "ostruct"
 
 # dependencies
-require 'attributed-string'
+require "attributed-string"
 # require 'async/http/faraday'
 
 
@@ -39,7 +39,7 @@ require_relative "instruct/helpers/helpers"
 
 # optional dependencies
 begin
-  require 'rainbow'
+  require "rainbow"
 rescue LoadError
 end
 

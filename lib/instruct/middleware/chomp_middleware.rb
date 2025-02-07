@@ -12,8 +12,7 @@ module Instruct
     set_instruct_class_id 5
 
     def call(req, _next:)
-
-      whitespace = ''
+      whitespace = ""
       # TODO, this should only be for non-hidden whitespace
       req.prompt.to_s.match(/(\s+)$/) do |match|
         whitespace = match[0]
@@ -40,7 +39,7 @@ module Instruct
         if completion.length >= whitespace.length
           trimming_whitespace = false
           if completion.start_with?(whitespace)
-            completion[...whitespace.length] = ''
+            completion[...whitespace.length] = ""
             next false if completion.empty?
           end
         end
@@ -48,9 +47,6 @@ module Instruct
       end
 
       _next.call(req)
-
     end
-
-
   end
 end

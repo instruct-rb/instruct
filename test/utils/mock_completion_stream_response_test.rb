@@ -34,7 +34,7 @@ class MockCompletionStreamResponseTest < Minitest::Test
   end
 
   def test_takes_an_array_for_custom_chunking
-    chunks = ["some ", "text ", "with ", "cus", "tom chunks"]
+    chunks = [ "some ", "text ", "with ", "cus", "tom chunks" ]
     mock = MockCompletionStreamResponse.new(chunks)
 
     # poor test: it's testing the implementation, not the behavior
@@ -42,5 +42,4 @@ class MockCompletionStreamResponseTest < Minitest::Test
       assert_equal chunks[idx], chunk[:text_chunk]
     end
   end
-
 end

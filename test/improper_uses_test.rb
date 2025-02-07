@@ -1,4 +1,4 @@
-require 'test_helper'
+require "test_helper"
 class ImproperUsesTest < Minitest::Test
   include Instruct::Helpers
   using Instruct::Refinements
@@ -25,5 +25,4 @@ class ImproperUsesTest < Minitest::Test
     assert_equal Instruct::Prompt, result.class
     assert_equal "Paris.The capital of France is 💬", result.to_s
   end
-
 end

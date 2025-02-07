@@ -11,7 +11,7 @@ class Instruct::OpenAI
     end
 
     def call(req, _next:)
-      raise Instruct::Todo, "Non text modalities not supported yet, consider opening a pull request" if req.env[:modalities] && (req.env[:modalities] != [:text] || req.env[:modalities] != ["text"])
+      raise Instruct::Todo, "Non text modalities not supported yet, consider opening a pull request" if req.env[:modalities] && (req.env[:modalities] != [ :text ] || req.env[:modalities] != [ "text" ])
       raise Instruct::Todo, "Tools are not supported yet, consider opening a pull request" if req.env[:tools] || req.env[:tool_choice] || req.env[:parallel_tool_calls] || req.env[:function_call] || req.env[:functions]
 
       # Extract client options
@@ -20,7 +20,7 @@ class Instruct::OpenAI
       #
       # Handle stop_chars conversion
       if req.env[:stop_chars].is_a?(String)
-        req.env[:stop] = req.env[:stop_chars].split('')
+        req.env[:stop] = req.env[:stop_chars].split("")
       end
 
       # Extract request options
@@ -28,13 +28,13 @@ class Instruct::OpenAI
       req.env[:openai_args] = request_options
 
       if request_options[:temperature] && @temperature_not_supported
-        req.env[:openai_unsupported_args] = [:temperature]
+        req.env[:openai_unsupported_args] = [ :temperature ]
         request_options.delete(:temperature)
       end
 
 
       # Handle deprecated arguments
-      deprecated_args = [:max_tokens, :function_call, :functions]
+      deprecated_args = [ :max_tokens, :function_call, :functions ]
       req.env[:openai_deprecated_args] = filter_env_keys(req, deprecated_args)
 
 

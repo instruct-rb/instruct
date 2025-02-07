@@ -9,10 +9,9 @@ module Instruct::Helpers
     # @param model [Instruct::Model, String, nil] The model to use for generation.
     # @param client_opts [Hash] Optional keyword argument that contains an option hash to pass to the API client when initializing a client model with a string.
     def gen(prompt = nil, model: nil, **kwargs)
-
       prompt = Instruct::Prompt.new(prompt) if prompt.class == String
       model ||= self.respond_to?(:instruct_default_model) ? self.instruct_default_model : nil
-      gen = Instruct::Gen.new(prompt: , model: , **kwargs)
+      gen = Instruct::Gen.new(prompt:, model:, **kwargs)
 
       return gen.call if prompt
 

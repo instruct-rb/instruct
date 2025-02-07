@@ -5,7 +5,7 @@ module Instruct
     include Instruct::Serializable
     set_instruct_class_id 4
 
-    def initialize(roles: [:system, :user, :assistant])
+    def initialize(roles: [ :system, :user, :assistant ])
       @roles = roles
     end
 
@@ -83,8 +83,5 @@ module Instruct
       messages << { role => prompt_str[message_range].remove_attrs(:role) } unless message_range.size.zero? || role.nil?
       { messages: messages }
     end
-
-
-
   end
 end

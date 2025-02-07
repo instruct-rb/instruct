@@ -1,4 +1,4 @@
-require 'logger'
+require "logger"
 
 module Instruct
   class << self
@@ -10,12 +10,12 @@ module Instruct
     attr_writer :logger, :err_logger
     def logger
       @logger ||= Logger.new(STDOUT).tap do |l|
-        l.sev_threshold = ENV.fetch('INSTRUCT_LOG_LEVEL', 'warn').to_sym
+        l.sev_threshold = ENV.fetch("INSTRUCT_LOG_LEVEL", "warn").to_sym
       end
     end
     def err_logger
       @error_logger ||= Logger.new(STDERR).tap do |l|
-        l.sev_threshold = ENV.fetch('INSTRUCT_LOG_LEVEL', 'warn').to_sym
+        l.sev_threshold = ENV.fetch("INSTRUCT_LOG_LEVEL", "warn").to_sym
       end
     end
 
@@ -32,7 +32,7 @@ module Instruct
 
     def set_default_model(model, **kwargs)
       if model.is_a?(String)
-        @default_model = [model, kwargs]
+        @default_model = [ model, kwargs ]
       elsif kwargs.any?
         raise ArgumentError, "Cannot pass kwargs when passing a model object"
       else
@@ -40,6 +40,5 @@ module Instruct
       end
       true if @default_model
     end
-
   end
 end

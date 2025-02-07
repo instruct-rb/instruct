@@ -73,7 +73,7 @@ module Instruct
     protected
 
     def append_default_middleware_if_not_added
-      [Instruct::ChompMiddleware, Instruct::ChatCompletionMiddleware, Instruct::Anthropic::Middleware].each do |middleware|
+      [ Instruct::ChompMiddleware, Instruct::ChatCompletionMiddleware, Instruct::Anthropic::Middleware ].each do |middleware|
         if !@middlewares.any? { |m| m.is_a?(middleware) }
           @middlewares << middleware.new
         end

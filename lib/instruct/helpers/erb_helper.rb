@@ -15,15 +15,15 @@ module Instruct
     class P
       def system(*args, &block)
         raise ArgumentError, P_HELPER_ERROR_MESSAGE if args.length > 0
-        return Prompt.new("\nsystem: ", safe: true)+ Instruct::CompileERB.new(template: yield, _binding: block.binding).prompt
+        Prompt.new("\nsystem: ", safe: true)+ Instruct::CompileERB.new(template: yield, _binding: block.binding).prompt
       end
       def user(*args, &block)
         raise ArgumentError, P_HELPER_ERROR_MESSAGE if args.length > 0
-        return Prompt.new("\nuser: ", safe: true) + Instruct::CompileERB.new(template: yield, _binding: block.binding).prompt
+        Prompt.new("\nuser: ", safe: true) + Instruct::CompileERB.new(template: yield, _binding: block.binding).prompt
       end
       def assistant(*args, &block)
         raise ArgumentError, P_HELPER_ERROR_MESSAGE if args.length > 0
-        return Prompt.new("\nassistant: ", safe: true) + Instruct::CompileERB.new(template: yield, _binding: block.binding).prompt
+        Prompt.new("\nassistant: ", safe: true) + Instruct::CompileERB.new(template: yield, _binding: block.binding).prompt
       end
     end
   end
