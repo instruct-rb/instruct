@@ -17,8 +17,12 @@ group :jupyter do
   gem "rexml"
 end
 # development
-gem "rake"
-gem "minitest"
+group :development do
+  gem "rake"
+  gem "minitest"
+  gem "rubocop"
+  gem "rubocop-performance"
+end
 gem "attributed-string", github: "mackross/attributed-string-rb", branch: "main"
 
 # documentation server
