@@ -54,6 +54,9 @@ if defined? ::OpenAI
   require_relative "instruct/llms/openai/completion_model"
   require_relative "instruct/llms/openai/completion_response"
   require_relative "instruct/llms/openai/chat_completion_response"
+  require_relative "instruct/llms/gemini/completion_model"
+  require_relative "instruct/llms/gemini/middleware"
+  require_relative "instruct/llms/gemini/chat_completion_response"
   Instruct.openai_loaded = true
 else
 end

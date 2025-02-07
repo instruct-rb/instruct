@@ -13,6 +13,8 @@ module Instruct
     def self.from_string(string, **kwargs)
       if string.include?("claude") || string.include?("anthropic")
         Instruct::Anthropic.new(string, **kwargs)
+      elsif string.include?("gemini")
+        Instruct::Gemini.new(string, **kwargs)
       else
         Instruct::OpenAI.new(string, **kwargs)
       end
