@@ -36,6 +36,7 @@ module Instruct
       request_params = req.env[:openai_args] || {}
       request_params[:model] = @model_name if request_params[:model].nil?
 
+      warn_about_unsupported_args(req.env[:openai_unsupported_args]) if req.env[:openai_unsupported_args]
       if is_chat_model?(req)
         response = request_params[:stream] = Instruct::OpenAI::ChatCompletionResponse.new(**req.response_kwargs)
         request_params.merge!(req.prompt_object)
@@ -73,7 +74,7 @@ module Instruct
     protected
 
     def append_default_middleware_if_not_added(req, middlewares)
-      openai_middlewares = [Instruct::OpenAI::Middleware.new]
+      openai_middlewares = [Instruct::OpenAI::Middleware.new(use_developer_message: uses_developer_message?(req), temperature_not_supported: temperature_not_supported?(req))]
       if is_chat_model?(req)
         openai_middlewares = [Instruct::ChompMiddleware.new, Instruct::ChatCompletionMiddleware.new] + openai_middlewares
       end
@@ -88,6 +89,19 @@ module Instruct
 
     def is_chat_model?(req)
       !(req.env[:use_completion_endpoint] || ((req.env[:model] || @model_name) == 'gpt-3.5-turbo-instruct'))
+    end
+
+    def uses_developer_message?(req)
+      is_o_reasoning_model?(req) || req.env[:use_developer_message]
+    end
+
+    def temperature_not_supported?(req)
+      is_o_reasoning_model?(req) 
+    end
+
+    def is_o_reasoning_model?(req)
+      regexp = /^o\d/
+      (req.env[:model] || @model_name).match?(regexp)
     end
 
     def build_client(req_client_opts = {})
@@ -110,6 +124,14 @@ module Instruct
     def set_access_token_from_env_if_needed
       access_key = ENV['OPENAI_API_KEY'] || ENV['OPENAI_ACCESS_TOKEN']
       @default_request_env[:access_token] = access_key if access_key && @default_request_env[:access_token].nil?
+    end
+
+    def warn_about_unsupported_args(unsupported_args)
+      return if Instruct.suppress_warnings || @unsupported_arg_warned
+      if unsupported_args && !unsupported_args.empty?
+        puts "Warning: the follow args are not supported by OpenAI and will be removed in the future: #{unsupported_args.keys.join(', ')}"
+        @unsupported_arg_warned = true
+      end
     end
 
     def warn_about_deprecated_args(deprecated_args)

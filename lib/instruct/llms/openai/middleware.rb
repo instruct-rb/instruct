@@ -3,7 +3,12 @@ class Instruct::OpenAI
     include Instruct::Serializable
     set_instruct_class_id 101
     CLIENT_PARAMS = %i[api_type api_version access_token organization_id uri_base request_timeout extra_headers].freeze
-    REQUEST_PARAMS = %i[store metadata frequency_penalty logit_bias logprobs top_logprobs max_completion_tokens n prediction presence_penalty response_format seed service_tier stop stream_options temperature top_p user].freeze
+    REQUEST_PARAMS = %i[store metadata frequency_penalty logit_bias logprobs top_logprobs max_completion_tokens n prediction presence_penalty response_format seed service_tier stop stream_options temperature top_p user reasoning_effort].freeze
+
+    def initialize(use_developer_message: false, temperature_not_supported: false)
+      @use_developer_message = use_developer_message
+      @temperature_not_supported = temperature_not_supported
+    end
 
     def call(req, _next:)
       raise Instruct::Todo, "Non text modalities not supported yet, consider opening a pull request" if req.env[:modalities] && (req.env[:modalities] != [:text] || req.env[:modalities] != ["text"])
@@ -22,6 +27,12 @@ class Instruct::OpenAI
       request_options = filter_env_keys(req, REQUEST_PARAMS)
       req.env[:openai_args] = request_options
 
+      if request_options[:temperature] && @temperature_not_supported
+        req.env[:openai_unsupported_args] = [:temperature]
+        request_options.delete(:temperature)
+      end
+
+
       # Handle deprecated arguments
       deprecated_args = [:max_tokens, :function_call, :functions]
       req.env[:openai_deprecated_args] = filter_env_keys(req, deprecated_args)
@@ -37,13 +48,18 @@ class Instruct::OpenAI
     def transform(prompt_obj)
       if prompt_obj.is_a?(Hash) && prompt_obj[:messages].is_a?(Array)
         prompt_obj[:messages].map! do |message|
-          { role: message.keys.first, content: message.values.first.to_s }
+          { role: rename_system_role_to_developer_if_required(message.keys.first), content: message.values.first.to_s }
         end
       end
       prompt_obj
     end
 
     private
+
+
+    def rename_system_role_to_developer_if_required(role)
+      @use_developer_message && role == :system ? :developer : role
+    end
 
     def filter_env_keys(req, keys)
       req.env.select { |k, _| keys.include?(k) }

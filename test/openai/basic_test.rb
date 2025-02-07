@@ -30,6 +30,12 @@ class OpenAIBasicTest < Minitest::Test
     end
   end
 
+  def test_can_use_o1_and_o3_model_with_developer_message
+    prompt = "system: you're a translation bot, return whatever the user says in french (do nothing else).\nuser: one apple.".prompt_safe + gen
+    response = prompt.call(stop_chars: ".", model: 'o3-mini', temperature: 0, reasoning_effort: :low)
+    assert_equal "une pomme", response.to_s
+  end
+
   def test_set_client_opts_in_gen
     prompt = "system: you're an alphabet bot\nuser: a b\nassistant: c\n".prompt_safe + gen(access_token: 'xx')
     assert_raises Faraday::UnauthorizedError do
